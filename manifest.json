@@ -1,0 +1,17 @@
+{
+  "name": "VINOSKA TASKS",
+  "short_name": "VINOSKA",
+  "description": "Персональный менеджер задач и трекер привычек",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090a0f",
+  "theme_color": "#090a0f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
