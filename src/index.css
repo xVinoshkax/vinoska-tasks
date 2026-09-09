@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+:root, [data-theme="dark"] {
+  --bg-main: #0b0b0d;
+  --bg-sidebar: #121214;
+  --bg-surface: #1c1c1e;
+  --bg-surface-hover: #252528;
+  --bg-card: #1c1c1e;
+  --bg-card-hover: #242426;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-muted: #636366;
+  --accent-ios: #0a84ff;
+  color-scheme: dark;
+}
+
+
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* iOS glass surface & panels */
+.ios-panel {
+  background-color: var(--bg-sidebar);
+  border-color: var(--border-subtle);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.ios-card {
+  container-type: inline-size;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.ios-card:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-strong);
+}
+
+/* Responsive Task Row via Container Queries */
+.task-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.task-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.task-row-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+/* When the task card is in a narrow container (e.g. side panels open, small window) */
+@container (max-width: 540px) {
+  .task-row-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+
+  .task-row-main {
+    width: 100%;
+  }
+
+  .task-row-badges {
+    width: 100%;
+    padding-left: 2rem; /* Aligns neatly under the task title past checkbox and star */
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 0.375rem;
+  }
+
+  .task-row-slider-btn {
+    margin-left: auto;
+  }
+}
+
+/* iOS Liquid Glass button styling */
+.ios-glass-btn {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ios-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.ios-glass-btn:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Fix Windows Chromium dropdown white background bug */
+select {
+  background-color: #1c1c1e !important;
+  color: #f5f5f7 !important;
+}
+
+select option {
+  background-color: #1c1c1e !important;
+  color: #f5f5f7 !important;
+  padding: 8px 12px;
+}
+
+select option:checked {
+  background-color: #0a84ff !important;
+  color: #ffffff !important;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}

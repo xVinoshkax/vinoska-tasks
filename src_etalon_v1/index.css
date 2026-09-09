@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+:root, [data-theme="oled"] {
+  --bg-main: #000000;
+  --bg-sidebar: #121214;
+  --bg-surface: #1c1c1e;
+  --bg-surface-hover: #252528;
+  --bg-card: #1c1c1e;
+  --bg-card-hover: #242426;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-muted: #636366;
+  --accent-ios: #0a84ff;
+}
+
+[data-theme="graphite"] {
+  --bg-main: #101114;
+  --bg-sidebar: #16181e;
+  --bg-surface: #1e2028;
+  --bg-surface-hover: #272a35;
+  --bg-card: #1e2028;
+  --bg-card-hover: #282b36;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --accent-ios: #6366f1;
+}
+
+[data-theme="navy"] {
+  --bg-main: #080b12;
+  --bg-sidebar: #0f1523;
+  --bg-surface: #161f33;
+  --bg-surface-hover: #1e2a44;
+  --bg-card: #161f33;
+  --bg-card-hover: #1f2a45;
+  --border-subtle: rgba(147, 197, 253, 0.09);
+  --border-strong: rgba(147, 197, 253, 0.18);
+  --text-primary: #f0f6fc;
+  --text-secondary: #8ba2c4;
+  --text-muted: #62728d;
+  --accent-ios: #38bdf8;
+}
+
+[data-theme="slate"] {
+  --bg-main: #141312;
+  --bg-sidebar: #1c1a18;
+  --bg-surface: #262320;
+  --bg-surface-hover: #302c28;
+  --bg-card: #262320;
+  --bg-card-hover: #322d28;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text-primary: #f5f4f0;
+  --text-secondary: #a8a29e;
+  --text-muted: #78716c;
+  --accent-ios: #f59e0b;
+}
+
+[data-theme="emerald"] {
+  --bg-main: #09120e;
+  --bg-sidebar: #101c16;
+  --bg-surface: #182820;
+  --bg-surface-hover: #21362b;
+  --bg-card: #182820;
+  --bg-card-hover: #23392e;
+  --border-subtle: rgba(52, 211, 153, 0.1);
+  --border-strong: rgba(52, 211, 153, 0.2);
+  --text-primary: #ecfdf5;
+  --text-secondary: #86efac;
+  --text-muted: #4ade80;
+  --accent-ios: #10b981;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* iOS glass surface & panels */
+.ios-panel {
+  background-color: var(--bg-sidebar);
+  border-color: var(--border-subtle);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.ios-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.ios-card:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-strong);
+}
+
+/* iOS Liquid Glass button styling */
+.ios-glass-btn {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.18);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ios-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.ios-glass-btn:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Fix Windows Chromium dropdown white background bug */
+select {
+  background-color: #1c1c1e !important;
+  color: #f5f5f7 !important;
+}
+
+select option {
+  background-color: #1c1c1e !important;
+  color: #f5f5f7 !important;
+  padding: 8px 12px;
+}
+
+select option:checked {
+  background-color: #0a84ff !important;
+  color: #ffffff !important;
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
