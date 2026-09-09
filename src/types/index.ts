@@ -108,5 +108,32 @@ export interface TaskFilters {
   onlyWithSubtasks: boolean;
 }
 
+export interface UserProfile {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+export type SyncStatus = 'offline' | 'idle' | 'syncing' | 'synced' | 'error';
+
+export interface FirebaseAppConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket?: string;
+  messagingSenderId?: string;
+  appId: string;
+}
+
+export interface CloudUserData {
+  tasks: Task[];
+  projects: Project[];
+  habits: Habit[];
+  priorities: CustomPriority[];
+  activity: ActivityDay[];
+  updatedAt: number;
+}
+
 
 

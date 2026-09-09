@@ -10,9 +10,11 @@ import {
   Flame,
   Pencil,
   Settings2,
-  Layers
+  Layers,
+  Cloud,
+  LogOut
 } from 'lucide-react';
-import type { Project, ViewFilter, ActivityDay, Habit, Task } from '../types';
+import type { Project, ViewFilter, ActivityDay, Habit, Task, UserProfile, SyncStatus } from '../types';
 import { toggleSound, isSoundEnabled } from '../utils/sound';
 import { SidebarActivityWidget } from './SidebarActivityWidget';
 import { MiniMonthCalendar } from './MiniMonthCalendar';
@@ -188,6 +190,10 @@ interface SidebarProps {
   onNewProject: () => void;
   onEditProject: (project: Project) => void;
   onOpenSettings: () => void;
+  user?: UserProfile | null;
+  syncStatus?: SyncStatus;
+  onOpenAuth?: () => void;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -207,6 +213,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewProject,
   onEditProject,
   onOpenSettings,
+  user = null,
+  syncStatus = 'offline',
+  onOpenAuth,
+  onLogout,
 }) => {
   const [soundOn, setSoundOn] = React.useState(isSoundEnabled());
 
@@ -338,6 +348,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         <div className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] flex flex-col items-center gap-2">
+          {user ? (
+            <button
+              onClick={onLogout}
+              title={`Выйти: ${user.displayName || user.email}`}
+              className="relative p-1 rounded-lg text-slate-400 hover:text-red-400 hover:bg-white/5 transition group"
+            >
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-6 h-6 rounded-full object-cover" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-indigo-600 text-[10px] font-bold text-white flex items-center justify-center uppercase">
+                  {(user.displayName || user.email || 'U')[0]}
+                </div>
+              )}
+              <span
+                className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-[#13151d] ${
+                  syncStatus === 'synced'
+                    ? 'bg-emerald-400'
+                    : syncStatus === 'syncing'
+                    ? 'bg-amber-400 animate-pulse'
+                    : syncStatus === 'error'
+                    ? 'bg-red-400'
+                    : 'bg-slate-400'
+                }`}
+              />
+            </button>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              title="Войти в облако для синхронизации"
+              className="p-2 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition"
+            >
+              <Cloud size={16} />
+            </button>
+          )}
+
           <button
             onClick={onOpenSettings}
             title="Настройки и темы"
@@ -527,8 +572,75 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
 
-      {/* Footer: Quick Settings */}
-      <div className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-between">
+      {/* Footer: Account & Quick Settings */}
+      <div className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] space-y-2">
+        {user ? (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition group">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt={user.displayName || 'Avatar'}
+                  className="w-7 h-7 rounded-full object-cover border border-white/10 shrink-0"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white uppercase shadow-sm shrink-0">
+                  {(user.displayName || user.email || 'U')[0]}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="text-xs font-medium text-slate-200 truncate leading-tight">
+                  {user.displayName || user.email?.split('@')[0]}
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      syncStatus === 'syncing'
+                        ? 'bg-amber-400 animate-pulse'
+                        : syncStatus === 'synced'
+                        ? 'bg-emerald-400'
+                        : syncStatus === 'error'
+                        ? 'bg-red-400'
+                        : 'bg-slate-400'
+                    }`}
+                  />
+                  <span className="text-[10px] text-slate-400 truncate">
+                    {syncStatus === 'syncing'
+                      ? 'Синхронизация...'
+                      : syncStatus === 'synced'
+                      ? 'В облаке'
+                      : syncStatus === 'error'
+                      ? 'Ошибка'
+                      : 'Офлайн'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                title="Выйти из аккаунта"
+                className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-white/5 opacity-70 group-hover:opacity-100 transition shrink-0"
+              >
+                <LogOut size={13} />
+              </button>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-300 hover:text-indigo-200 transition group text-xs font-medium"
+          >
+            <div className="flex items-center gap-2">
+              <Cloud size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+              <span>Войти в облако</span>
+            </div>
+            <span className="text-[10px] bg-indigo-500/20 px-1.5 py-0.5 rounded text-indigo-300">
+              Синхр.
+            </span>
+          </button>
+        )}
+
         <button
           onClick={onOpenSettings}
           className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 w-full"

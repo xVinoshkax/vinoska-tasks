@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Sliders, Volume2, VolumeX, Play, Check, AlertCircle } from 'lucide-react';
+import { X, Sliders, Volume2, VolumeX, Play, Check, AlertCircle, Cloud } from 'lucide-react';
+import type { UserProfile, SyncStatus } from '../types';
 import {
   playCheckClick,
   playHabitFailSound,
@@ -16,6 +17,9 @@ interface SettingsModalProps {
   onOpenManageProperties: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
+  user?: UserProfile | null;
+  syncStatus?: SyncStatus;
+  onOpenAuth?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -26,6 +30,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenManageProperties,
   soundOn,
   onToggleSound,
+  user = null,
+  syncStatus = 'offline',
+  onOpenAuth,
 }) => {
   const [failSoundStyle, setFailSoundStyleState] = React.useState<HabitFailSoundStyle>(() => getHabitFailSoundStyle());
 
@@ -58,6 +65,51 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {/* Section 0: Cloud Sync (Firebase) */}
+          <div className="p-4 rounded-2xl bg-[#1c1f2a] border border-indigo-500/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                  <Cloud size={16} />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-white block">
+                    Облачная синхронизация
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        syncStatus === 'synced'
+                          ? 'bg-emerald-400'
+                          : syncStatus === 'syncing'
+                          ? 'bg-amber-400 animate-pulse'
+                          : syncStatus === 'error'
+                          ? 'bg-red-400'
+                          : 'bg-slate-500'
+                      }`}
+                    />
+                    <span className="text-[11px] text-slate-400 block">
+                      {user ? `Подключен: ${user.email || user.displayName}` : 'Войдите для синхронизации между девайсами'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {onOpenAuth && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenAuth();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-sm"
+                >
+                  {user ? 'Управление' : 'Войти'}
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Section 1: Sound Effects & Habit Break Sound */}
           <div className="p-4 rounded-2xl bg-[#1c1f2a] border border-white/[0.06] space-y-4">
             {/* Master Sound Switch */}

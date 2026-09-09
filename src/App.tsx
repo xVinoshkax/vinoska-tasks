@@ -7,8 +7,16 @@ import {
   CheckSquare,
   X
 } from 'lucide-react';
-import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters } from './types';
+import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters, UserProfile, SyncStatus } from './types';
 import { TaskStorage, HabitStorage, DEFAULT_PRIORITIES } from './api/client';
+import {
+  subscribeAuth,
+  subscribeCloudUserData,
+  queueSaveCloudUserData,
+  saveCloudUserDataImmediate,
+  fetchCloudUserData,
+  logoutUser,
+} from './api/firebase';
 import { Sidebar } from './components/Sidebar';
 import { FocusCard } from './components/FocusCard';
 import { TaskRow } from './components/TaskRow';
@@ -22,6 +30,7 @@ import { HabitsFullView } from './components/HabitsFullView';
 import { HabitModal } from './components/HabitModal';
 import { NewTaskForDateModal } from './components/NewTaskForDateModal';
 import { TaskFilterBar } from './components/TaskFilterBar';
+import { AuthModal } from './components/AuthModal';
 import { toggleSound, isSoundEnabled } from './utils/sound';
 
 const DEFAULT_TASK_FILTERS: TaskFilters = {
@@ -79,6 +88,13 @@ export function App() {
   const [dateForNewTask, setDateForNewTask] = React.useState<string | null>(null);
   const [quickTitle, setQuickTitle] = React.useState('');
 
+  // Firebase Auth & Cloud Sync state
+  const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
+  const [syncStatus, setSyncStatus] = React.useState<SyncStatus>('offline');
+  const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+  const isCloudIncoming = React.useRef(false);
+  const isInitialDataLoaded = React.useRef(false);
+
   // Batch selection state
   const [selectedTaskIds, setSelectedTaskIds] = React.useState<string[]>([]);
   const [isBatchMode, setIsBatchMode] = React.useState(false);
@@ -112,7 +128,113 @@ export function App() {
 
     // Enforce dark theme
     TaskStorage.initTheme();
+    isInitialDataLoaded.current = true;
   }, []);
+
+  // Subscribe to Firebase Auth
+  React.useEffect(() => {
+    const unsub = subscribeAuth((user) => {
+      setCurrentUser(user);
+      if (!user) {
+        setSyncStatus('offline');
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Subscribe to Firestore Realtime Updates when user is logged in
+  React.useEffect(() => {
+    if (!currentUser) return;
+
+    setSyncStatus('syncing');
+
+    const unsubFirestore = subscribeCloudUserData(
+      currentUser.uid,
+      (cloudData) => {
+        isCloudIncoming.current = true;
+
+        if (cloudData.tasks && cloudData.tasks.length > 0) {
+          setTasks(cloudData.tasks);
+          TaskStorage.saveTasks(cloudData.tasks);
+        }
+        if (cloudData.projects && cloudData.projects.length > 0) {
+          setProjects(cloudData.projects);
+          TaskStorage.saveProjects(cloudData.projects);
+        }
+        if (cloudData.habits && cloudData.habits.length > 0) {
+          setHabits(cloudData.habits);
+          HabitStorage.saveHabits(cloudData.habits);
+        }
+        if (cloudData.priorities && cloudData.priorities.length > 0) {
+          setPriorities(cloudData.priorities);
+          TaskStorage.savePriorities(cloudData.priorities);
+        }
+        if (cloudData.activity && cloudData.activity.length > 0) {
+          setActivity(cloudData.activity);
+          TaskStorage.saveActivity(cloudData.activity);
+        }
+
+        setSyncStatus('synced');
+
+        setTimeout(() => {
+          isCloudIncoming.current = false;
+        }, 150);
+      },
+      (err) => {
+        console.error('Firestore sync error:', err);
+        setSyncStatus('error');
+      }
+    );
+
+    // If cloud document doesn't exist yet on first login, seed from current local state
+    fetchCloudUserData(currentUser.uid).then((cloud) => {
+      if (!cloud || (!cloud.tasks?.length && !cloud.habits?.length)) {
+        saveCloudUserDataImmediate(currentUser.uid, {
+          tasks: TaskStorage.getTasks(),
+          projects: TaskStorage.getProjects(),
+          habits: HabitStorage.getHabits(),
+          priorities: TaskStorage.getPriorities(),
+          activity: TaskStorage.getActivity(),
+        })
+          .then(() => setSyncStatus('synced'))
+          .catch(() => setSyncStatus('error'));
+      }
+    });
+
+    return () => unsubFirestore();
+  }, [currentUser]);
+
+  // Outgoing sync effect: automatically debounces local changes to cloud
+  React.useEffect(() => {
+    if (!isInitialDataLoaded.current) return;
+    if (isCloudIncoming.current) return;
+    if (!currentUser) return;
+
+    setSyncStatus('syncing');
+    queueSaveCloudUserData(currentUser.uid, {
+      tasks,
+      projects,
+      habits,
+      priorities,
+      activity,
+    });
+
+    const timer = setTimeout(() => {
+      setSyncStatus('synced');
+    }, 1100);
+
+    return () => clearTimeout(timer);
+  }, [tasks, projects, habits, priorities, activity, currentUser]);
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    setCurrentUser(null);
+    setSyncStatus('offline');
+  };
 
   // Save tasks to local storage whenever tasks change
   const updateTasksState = (newTasks: Task[]) => {
@@ -598,6 +720,10 @@ export function App() {
         onNewProject={handleNewProject}
         onEditProject={handleEditProject}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        user={currentUser}
+        syncStatus={syncStatus}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Column 2: Dedicated Fixed Left Habits Column (Always available across all views) */}
@@ -851,6 +977,16 @@ export function App() {
           toggleSound();
           setSoundOn(!soundOn);
         }}
+        user={currentUser}
+        syncStatus={syncStatus}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+      />
+
+      {/* Cloud Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => setIsAuthModalOpen(false)}
       />
 
       {/* Project Create & Edit Modal */}
