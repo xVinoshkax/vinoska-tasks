@@ -24,8 +24,17 @@ import type { FirebaseAppConfig, CloudUserData, UserProfile } from '../types';
 
 const STORAGE_KEY_FIREBASE_CONFIG = 'vinoska_firebase_config';
 
+export const DEFAULT_FIREBASE_CONFIG: FirebaseAppConfig = {
+  apiKey: 'AIzaSyCaR2_WHOcUNGNPfbCduDTMfxBnhkQ0zgM',
+  authDomain: 'vinoska-tasks.firebaseapp.com',
+  projectId: 'vinoska-tasks',
+  storageBucket: 'vinoska-tasks.firebasestorage.app',
+  messagingSenderId: '698109121102',
+  appId: '1:698109121102:web:66435bf5c5b5e5b51b691f',
+};
+
 /**
- * Reads Firebase configuration from localStorage or Vite environment variables.
+ * Reads Firebase configuration from localStorage, Vite env variables, or default project.
  */
 export function getFirebaseConfig(): FirebaseAppConfig | null {
   try {
@@ -54,7 +63,7 @@ export function getFirebaseConfig(): FirebaseAppConfig | null {
     };
   }
 
-  return null;
+  return DEFAULT_FIREBASE_CONFIG;
 }
 
 export function saveFirebaseConfig(config: FirebaseAppConfig): void {
