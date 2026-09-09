@@ -25,7 +25,7 @@ import type { FirebaseAppConfig, CloudUserData, UserProfile } from '../types';
 const STORAGE_KEY_FIREBASE_CONFIG = 'vinoska_firebase_config';
 
 export const DEFAULT_FIREBASE_CONFIG: FirebaseAppConfig = {
-  apiKey: 'AIzaSyCaR2_WHOcUNGNPfbCduDTMfxBnhkQ0zgM',
+  apiKey: 'AIzaSyCAr2_WH0CUnGNPfbCduDTMfxBnhkQ0zgM',
   authDomain: 'vinoska-tasks.firebaseapp.com',
   projectId: 'vinoska-tasks',
   storageBucket: 'vinoska-tasks.firebasestorage.app',
@@ -41,7 +41,10 @@ export function getFirebaseConfig(): FirebaseAppConfig | null {
     const saved = localStorage.getItem(STORAGE_KEY_FIREBASE_CONFIG);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.apiKey && parsed.projectId) {
+      // Clean up old typo if present in local storage
+      if (parsed.apiKey && parsed.apiKey.includes('WHOc')) {
+        localStorage.removeItem(STORAGE_KEY_FIREBASE_CONFIG);
+      } else if (parsed.apiKey && parsed.projectId) {
         return parsed;
       }
     }
