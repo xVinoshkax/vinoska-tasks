@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Sliders, Volume2, VolumeX, Play, Check, AlertCircle, Cloud } from 'lucide-react';
+import { X, Sliders, Volume2, VolumeX, Play, Check, AlertCircle, Cloud, Smartphone, Download, Wifi, WifiOff } from 'lucide-react';
 import type { UserProfile, SyncStatus } from '../types';
 import {
   playCheckClick,
@@ -22,6 +22,10 @@ interface SettingsModalProps {
   user?: UserProfile | null;
   syncStatus?: SyncStatus;
   onOpenAuth?: () => void;
+  isOnline?: boolean;
+  canInstallPWA?: boolean;
+  isAppInstalled?: boolean;
+  onInstallPWA?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -37,6 +41,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   user = null,
   syncStatus = 'offline',
   onOpenAuth,
+  isOnline = true,
+  canInstallPWA = false,
+  isAppInstalled = false,
+  onInstallPWA,
 }) => {
   const [failSoundStyle, setFailSoundStyleState] = React.useState<HabitFailSoundStyle>(() => getHabitFailSoundStyle());
 
@@ -112,6 +120,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Section: PWA & Offline Sync */}
+          <div className="p-4 rounded-2xl bg-[#1c1f2a] border border-white/[0.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                  <Smartphone size={16} />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-white block">
+                    Приложение (PWA) и Офлайн-режим
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {isOnline ? (
+                      <span className="flex items-center gap-1 text-[11px] text-emerald-400">
+                        <Wifi size={12} />
+                        <span>Онлайн · Офлайн-кеш активен</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[11px] text-amber-400">
+                        <WifiOff size={12} />
+                        <span>Офлайн · Изменения в памяти устройства</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {canInstallPWA && onInstallPWA && !isAppInstalled && (
+                <button
+                  type="button"
+                  onClick={onInstallPWA}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition shadow-sm shadow-purple-500/20 active:scale-95"
+                >
+                  <Download size={13} />
+                  <span>Установить</span>
+                </button>
+              )}
+
+              {isAppInstalled && (
+                <span className="text-[11px] text-emerald-400 font-medium px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  Установлено ✓
+                </span>
+              )}
+            </div>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Приложение работает на 100% автономно даже без интернета благодаря Service Worker и локальной базе.
+              {!isAppInstalled && (
+                <span className="block text-slate-400 mt-1">
+                  На iPhone/iPad: нажмите значок «Поделиться» в Safari и выберите «На экран «Домой»».
+                </span>
+              )}
+            </p>
           </div>
 
           {/* Section 1: Sound Effects & Habit Break Sound */}

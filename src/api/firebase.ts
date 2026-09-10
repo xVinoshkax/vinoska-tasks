@@ -13,6 +13,9 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   doc,
   getDoc,
   setDoc,
@@ -98,7 +101,16 @@ export function getFirebaseServices(): { app: FirebaseApp; auth: Auth; db: Fires
   try {
     appInstance = getApps().length > 0 ? getApp() : initializeApp(config);
     authInstance = getAuth(appInstance);
-    dbInstance = getFirestore(appInstance);
+    try {
+      dbInstance = initializeFirestore(appInstance, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    } catch {
+      // In case Firestore was already initialized (e.g. HMR or re-entry)
+      dbInstance = getFirestore(appInstance);
+    }
     return { app: appInstance, auth: authInstance, db: dbInstance };
   } catch (err) {
     console.error('Error initializing Firebase services:', err);

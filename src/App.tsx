@@ -10,7 +10,9 @@ import {
   Sparkles,
   Clock,
   Inbox,
-  Cloud
+  Cloud,
+  Download,
+  WifiOff
 } from 'lucide-react';
 import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters, UserProfile, SyncStatus, CloudUserData } from './types';
 import { TaskStorage, HabitStorage, DEFAULT_PRIORITIES } from './api/client';
@@ -105,6 +107,94 @@ export function App() {
   // Guard refs to eliminate race conditions
   const isCloudIncoming = React.useRef(false);
   const isCloudReadyForWrite = React.useRef(false);
+
+  // Network connectivity state
+  const [isOnline, setIsOnline] = React.useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  // PWA Install prompt handling
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [installPromptEvent, setInstallPromptEvent] = React.useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = React.useState(false);
+
+  React.useEffect(() => {
+    // Check if app is launched in standalone window
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone) {
+      setIsAppInstalled(true);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setInstallPromptEvent(e);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPromptEvent(null);
+      setIsAppInstalled(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!installPromptEvent) return;
+    try {
+      await installPromptEvent.prompt();
+      const choice = await installPromptEvent.userChoice;
+      if (choice.outcome === 'accepted') {
+        setIsAppInstalled(true);
+        setInstallPromptEvent(null);
+      }
+    } catch (err) {
+      console.error('Install PWA error:', err);
+    }
+  };
+
+  // Re-sync with Firestore whenever network comes back online
+  React.useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      if (currentUser) {
+        const hasPending = localStorage.getItem('vinoska_pending_sync') === 'true';
+        if (hasPending) {
+          setSyncStatus('syncing');
+          saveCloudUserDataImmediate(currentUser.uid, {
+            tasks: TaskStorage.getTasks(),
+            projects: TaskStorage.getProjects(),
+            habits: HabitStorage.getHabits(),
+            priorities: TaskStorage.getPriorities(),
+            activity: TaskStorage.getActivity(),
+          })
+            .then(() => {
+              localStorage.removeItem('vinoska_pending_sync');
+              setSyncStatus('synced');
+            })
+            .catch(() => setSyncStatus('error'));
+        } else {
+          setSyncStatus('synced');
+        }
+      }
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setSyncStatus('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [currentUser]);
 
   // Batch selection state
   const [selectedTaskIds, setSelectedTaskIds] = React.useState<string[]>([]);
@@ -225,16 +315,27 @@ export function App() {
   const pushToCloud = React.useCallback(
     (fieldUpdate: Partial<CloudUserData>) => {
       if (!currentUser || !isCloudReadyForWrite.current || isCloudIncoming.current) return;
+      if (!navigator.onLine) {
+        localStorage.setItem('vinoska_pending_sync', 'true');
+        setSyncStatus('offline');
+        return;
+      }
       setSyncStatus('syncing');
       queueSaveCloudUserData(
         currentUser.uid,
         fieldUpdate,
         () => {
+          localStorage.removeItem('vinoska_pending_sync');
           setSyncStatus('synced');
         },
         (err) => {
           console.error('Cloud save error:', err);
-          setSyncStatus('error');
+          if (!navigator.onLine) {
+            localStorage.setItem('vinoska_pending_sync', 'true');
+            setSyncStatus('offline');
+          } else {
+            setSyncStatus('error');
+          }
         }
       );
     },
@@ -861,6 +962,30 @@ export function App() {
               )}
             </div>
 
+            {/* Offline badge */}
+            {!isOnline && (
+              <div
+                title="Автономный режим. Все изменения сохраняются локально и синхронизируются при появлении сети."
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs animate-pulse shrink-0"
+              >
+                <WifiOff size={13} />
+                <span className="hidden sm:inline font-medium">Офлайн</span>
+              </div>
+            )}
+
+            {/* Install PWA button in header if available */}
+            {installPromptEvent && !isAppInstalled && (
+              <button
+                onClick={handleInstallPWA}
+                title="Установить приложение на устройство"
+                className="flex items-center gap-1.5 text-xs font-medium text-indigo-300 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 px-2.5 py-1 rounded-full transition shadow-sm shrink-0"
+              >
+                <Download size={13} />
+                <span className="hidden sm:inline">Установить PWA</span>
+                <span className="sm:hidden">PWA</span>
+              </button>
+            )}
+
             {activeView === 'habits' ? (
               <button
                 onClick={handleNewHabit}
@@ -1243,6 +1368,10 @@ export function App() {
         user={currentUser}
         syncStatus={syncStatus}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        isOnline={isOnline}
+        canInstallPWA={!!installPromptEvent}
+        isAppInstalled={isAppInstalled}
+        onInstallPWA={handleInstallPWA}
       />
 
       {/* Cloud Auth Modal */}
