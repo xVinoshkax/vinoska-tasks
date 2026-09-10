@@ -7,14 +7,14 @@ import {
   CheckSquare,
   X
 } from 'lucide-react';
-import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters, UserProfile, SyncStatus } from './types';
+import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters, UserProfile, SyncStatus, CloudUserData } from './types';
 import { TaskStorage, HabitStorage, DEFAULT_PRIORITIES } from './api/client';
 import {
   subscribeAuth,
   subscribeCloudUserData,
   queueSaveCloudUserData,
   saveCloudUserDataImmediate,
-  fetchCloudUserData,
+  cancelPendingCloudSave,
   logoutUser,
 } from './api/firebase';
 import { Sidebar } from './components/Sidebar';
@@ -92,8 +92,10 @@ export function App() {
   const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
   const [syncStatus, setSyncStatus] = React.useState<SyncStatus>('offline');
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+  
+  // Guard refs to eliminate race conditions
   const isCloudIncoming = React.useRef(false);
-  const isInitialDataLoaded = React.useRef(false);
+  const isCloudReadyForWrite = React.useRef(false);
 
   // Batch selection state
   const [selectedTaskIds, setSelectedTaskIds] = React.useState<string[]>([]);
@@ -128,7 +130,6 @@ export function App() {
 
     // Enforce dark theme
     TaskStorage.initTheme();
-    isInitialDataLoaded.current = true;
   }, []);
 
   // Subscribe to Firebase Auth
@@ -137,6 +138,7 @@ export function App() {
       setCurrentUser(user);
       if (!user) {
         setSyncStatus('offline');
+        isCloudReadyForWrite.current = false;
       }
     });
     return () => unsub();
@@ -144,41 +146,59 @@ export function App() {
 
   // Subscribe to Firestore Realtime Updates when user is logged in
   React.useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      isCloudReadyForWrite.current = false;
+      return;
+    }
 
     setSyncStatus('syncing');
+    // Block any outgoing writes until the first cloud snapshot arrives!
+    isCloudReadyForWrite.current = false;
 
     const unsubFirestore = subscribeCloudUserData(
       currentUser.uid,
-      (cloudData) => {
+      (cloudData, exists) => {
         isCloudIncoming.current = true;
 
-        if (cloudData.tasks && cloudData.tasks.length > 0) {
+        if (exists) {
+          // Cloud is the master source of truth for this user!
           setTasks(cloudData.tasks);
           TaskStorage.saveTasks(cloudData.tasks);
-        }
-        if (cloudData.projects && cloudData.projects.length > 0) {
+
           setProjects(cloudData.projects);
           TaskStorage.saveProjects(cloudData.projects);
-        }
-        if (cloudData.habits && cloudData.habits.length > 0) {
+
           setHabits(cloudData.habits);
           HabitStorage.saveHabits(cloudData.habits);
-        }
-        if (cloudData.priorities && cloudData.priorities.length > 0) {
-          setPriorities(cloudData.priorities);
-          TaskStorage.savePriorities(cloudData.priorities);
-        }
-        if (cloudData.activity && cloudData.activity.length > 0) {
+
+          const effectivePrios = cloudData.priorities?.length ? cloudData.priorities : DEFAULT_PRIORITIES;
+          setPriorities(effectivePrios);
+          TaskStorage.savePriorities(effectivePrios);
+
           setActivity(cloudData.activity);
           TaskStorage.saveActivity(cloudData.activity);
-        }
 
-        setSyncStatus('synced');
+          setSyncStatus('synced');
+          isCloudReadyForWrite.current = true;
+        } else {
+          // Brand new user account without cloud data: seed local data once
+          saveCloudUserDataImmediate(currentUser.uid, {
+            tasks: TaskStorage.getTasks(),
+            projects: TaskStorage.getProjects(),
+            habits: HabitStorage.getHabits(),
+            priorities: TaskStorage.getPriorities(),
+            activity: TaskStorage.getActivity(),
+          })
+            .then(() => {
+              setSyncStatus('synced');
+              isCloudReadyForWrite.current = true;
+            })
+            .catch(() => setSyncStatus('error'));
+        }
 
         setTimeout(() => {
           isCloudIncoming.current = false;
-        }, 150);
+        }, 100);
       },
       (err) => {
         console.error('Firestore sync error:', err);
@@ -186,47 +206,27 @@ export function App() {
       }
     );
 
-    // If cloud document doesn't exist yet on first login, seed from current local state
-    fetchCloudUserData(currentUser.uid).then((cloud) => {
-      if (!cloud || (!cloud.tasks?.length && !cloud.habits?.length)) {
-        saveCloudUserDataImmediate(currentUser.uid, {
-          tasks: TaskStorage.getTasks(),
-          projects: TaskStorage.getProjects(),
-          habits: HabitStorage.getHabits(),
-          priorities: TaskStorage.getPriorities(),
-          activity: TaskStorage.getActivity(),
-        })
-          .then(() => setSyncStatus('synced'))
-          .catch(() => setSyncStatus('error'));
-      }
-    });
-
-    return () => unsubFirestore();
+    return () => {
+      unsubFirestore();
+      isCloudReadyForWrite.current = false;
+    };
   }, [currentUser]);
 
-  // Outgoing sync effect: automatically debounces local changes to cloud
-  React.useEffect(() => {
-    if (!isInitialDataLoaded.current) return;
-    if (isCloudIncoming.current) return;
-    if (!currentUser) return;
-
-    setSyncStatus('syncing');
-    queueSaveCloudUserData(currentUser.uid, {
-      tasks,
-      projects,
-      habits,
-      priorities,
-      activity,
-    });
-
-    const timer = setTimeout(() => {
-      setSyncStatus('synced');
-    }, 1100);
-
-    return () => clearTimeout(timer);
-  }, [tasks, projects, habits, priorities, activity, currentUser]);
+  // Dispatch local user mutation to Firestore
+  const pushToCloud = React.useCallback(
+    (fieldUpdate: Partial<CloudUserData>) => {
+      if (!currentUser || !isCloudReadyForWrite.current || isCloudIncoming.current) return;
+      setSyncStatus('syncing');
+      queueSaveCloudUserData(currentUser.uid, fieldUpdate, () => {
+        setSyncStatus('synced');
+      });
+    },
+    [currentUser]
+  );
 
   const handleLogout = async () => {
+    cancelPendingCloudSave();
+    isCloudReadyForWrite.current = false;
     try {
       await logoutUser();
     } catch (err) {
@@ -236,15 +236,35 @@ export function App() {
     setSyncStatus('offline');
   };
 
-  // Save tasks to local storage whenever tasks change
+  // State mutators with automatic Cloud & LocalStorage sync
   const updateTasksState = (newTasks: Task[]) => {
     setTasks(newTasks);
     TaskStorage.saveTasks(newTasks);
+    pushToCloud({ tasks: newTasks });
+  };
+
+  const updateProjectsState = (nextProjects: Project[]) => {
+    setProjects(nextProjects);
+    TaskStorage.saveProjects(nextProjects);
+    pushToCloud({ projects: nextProjects });
+  };
+
+  const updateHabitsState = (nextHabits: Habit[]) => {
+    setHabits(nextHabits);
+    HabitStorage.saveHabits(nextHabits);
+    pushToCloud({ habits: nextHabits });
   };
 
   const handleUpdatePriorities = (newPrios: CustomPriority[]) => {
     setPriorities(newPrios);
     TaskStorage.savePriorities(newPrios);
+    pushToCloud({ priorities: newPrios });
+  };
+
+  const updateActivityState = (newActivity: ActivityDay[]) => {
+    setActivity(newActivity);
+    TaskStorage.saveActivity(newActivity);
+    pushToCloud({ activity: newActivity });
   };
 
   // Projects CRUD
@@ -266,14 +286,12 @@ export function App() {
     } else {
       nextProjects = [...projects, savedProj];
     }
-    setProjects(nextProjects);
-    TaskStorage.saveProjects(nextProjects);
+    updateProjectsState(nextProjects);
   };
 
   const handleDeleteProject = (projectId: string) => {
     const nextProjects = projects.filter((p) => p.id !== projectId);
-    setProjects(nextProjects);
-    TaskStorage.saveProjects(nextProjects);
+    updateProjectsState(nextProjects);
     // Unassign tasks from this project
     const nextTasks = tasks.map((t) => (t.project_id === projectId ? { ...t, project_id: null } : t));
     updateTasksState(nextTasks);
@@ -282,10 +300,19 @@ export function App() {
     }
   };
 
-  // Habits CRUD & Logging
+  // Habits CRUD & Logging (Pure state mutations to eliminate divergence)
   const handleLogHabitDay = (habitId: string, dateStr: string, status: HabitStatus | null) => {
-    const nextHabits = HabitStorage.logHabit(habitId, dateStr, status);
-    setHabits(nextHabits);
+    const nextHabits = habits.map((h) => {
+      if (h.id !== habitId) return h;
+      const logs = { ...(h.logs || {}) };
+      if (status === null) {
+        delete logs[dateStr];
+      } else {
+        logs[dateStr] = status;
+      }
+      return { ...h, logs };
+    });
+    updateHabitsState(nextHabits);
   };
 
   const handleNewHabit = () => {
@@ -299,33 +326,43 @@ export function App() {
   };
 
   const handleSaveHabit = (savedHabit: Habit) => {
-    const nextHabits = HabitStorage.saveHabit(savedHabit);
-    setHabits(nextHabits);
+    const existingIndex = habits.findIndex((h) => h.id === savedHabit.id);
+    let nextHabits: Habit[];
+    if (existingIndex >= 0) {
+      nextHabits = habits.map((h) => (h.id === savedHabit.id ? savedHabit : h));
+    } else {
+      nextHabits = [...habits, savedHabit];
+    }
+    updateHabitsState(nextHabits);
     setIsHabitModalOpen(false);
     setEditingHabit(null);
   };
 
   const handleDeleteHabit = (habitId: string) => {
-    const nextHabits = HabitStorage.deleteHabit(habitId);
-    setHabits(nextHabits);
+    const nextHabits = habits.filter((h) => h.id !== habitId);
+    updateHabitsState(nextHabits);
     setIsHabitModalOpen(false);
     setEditingHabit(null);
   };
 
   const handleResetHabit = (habitId: string) => {
-    const nextHabits = HabitStorage.resetHabitLogs(habitId);
-    setHabits(nextHabits);
+    const nextHabits = habits.map((h) => (h.id === habitId ? { ...h, logs: {} } : h));
+    updateHabitsState(nextHabits);
   };
 
   const handleResetTodayHabits = () => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const nextHabits = HabitStorage.resetAllHabitsToday(todayStr);
-    setHabits(nextHabits);
+    const nextHabits = habits.map((h) => {
+      const logs = { ...(h.logs || {}) };
+      delete logs[todayStr];
+      return { ...h, logs };
+    });
+    updateHabitsState(nextHabits);
   };
 
   const handleResetProductivityStreak = () => {
     TaskStorage.resetProductivityStreak();
-    setActivity(TaskStorage.getActivity());
+    updateActivityState(TaskStorage.getActivity());
   };
 
   // Project card colors handler
@@ -431,7 +468,7 @@ export function App() {
 
     if (isNowDone) {
       TaskStorage.recordActivityToday();
-      setActivity(TaskStorage.getActivity());
+      updateActivityState(TaskStorage.getActivity());
     }
 
     const nextTasks: Task[] = tasks.map((t) => {

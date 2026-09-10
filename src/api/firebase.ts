@@ -214,10 +214,11 @@ export function subscribeAuth(callback: (user: UserProfile | null) => void): Uns
 
 /**
  * Realtime listener on the user's primary document.
+ * Passes exists flag so caller knows if this is an existing cloud profile or brand new.
  */
 export function subscribeCloudUserData(
   uid: string,
-  onData: (data: CloudUserData) => void,
+  onData: (data: CloudUserData, exists: boolean) => void,
   onError?: (err: Error) => void
 ): Unsubscribe {
   const services = getFirebaseServices();
@@ -229,14 +230,29 @@ export function subscribeCloudUserData(
     (snap) => {
       if (snap.exists()) {
         const raw = snap.data() as Partial<CloudUserData>;
-        onData({
-          tasks: raw.tasks || [],
-          projects: raw.projects || [],
-          habits: raw.habits || [],
-          priorities: raw.priorities || [],
-          activity: raw.activity || [],
-          updatedAt: raw.updatedAt || Date.now(),
-        });
+        onData(
+          {
+            tasks: Array.isArray(raw.tasks) ? raw.tasks : [],
+            projects: Array.isArray(raw.projects) ? raw.projects : [],
+            habits: Array.isArray(raw.habits) ? raw.habits : [],
+            priorities: Array.isArray(raw.priorities) ? raw.priorities : [],
+            activity: Array.isArray(raw.activity) ? raw.activity : [],
+            updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : Date.now(),
+          },
+          true
+        );
+      } else {
+        onData(
+          {
+            tasks: [],
+            projects: [],
+            habits: [],
+            priorities: [],
+            activity: [],
+            updatedAt: 0,
+          },
+          false
+        );
       }
     },
     (err) => {
@@ -249,22 +265,25 @@ export function subscribeCloudUserData(
 /**
  * One-off read of cloud user document.
  */
-export async function fetchCloudUserData(uid: string): Promise<CloudUserData | null> {
+export async function fetchCloudUserData(uid: string): Promise<{ data: CloudUserData | null; exists: boolean }> {
   const services = getFirebaseServices();
-  if (!services) return null;
+  if (!services) return { data: null, exists: false };
 
   const docRef = doc(services.db, 'users', uid);
   const snap = await getDoc(docRef);
-  if (!snap.exists()) return null;
+  if (!snap.exists()) return { data: null, exists: false };
 
   const raw = snap.data() as Partial<CloudUserData>;
   return {
-    tasks: raw.tasks || [],
-    projects: raw.projects || [],
-    habits: raw.habits || [],
-    priorities: raw.priorities || [],
-    activity: raw.activity || [],
-    updatedAt: raw.updatedAt || Date.now(),
+    data: {
+      tasks: Array.isArray(raw.tasks) ? raw.tasks : [],
+      projects: Array.isArray(raw.projects) ? raw.projects : [],
+      habits: Array.isArray(raw.habits) ? raw.habits : [],
+      priorities: Array.isArray(raw.priorities) ? raw.priorities : [],
+      activity: Array.isArray(raw.activity) ? raw.activity : [],
+      updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : Date.now(),
+    },
+    exists: true,
   };
 }
 
@@ -272,10 +291,23 @@ let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 let pendingData: Partial<CloudUserData> = {};
 let pendingUid: string | null = null;
 
+export function cancelPendingCloudSave(): void {
+  if (saveTimeout) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
+  pendingData = {};
+  pendingUid = null;
+}
+
 /**
- * Debounced push to Firestore to prevent quota thrashing and network spam.
+ * Debounced push to Firestore (400ms) to prevent quota thrashing and network spam.
  */
-export function queueSaveCloudUserData(uid: string, data: Partial<CloudUserData>): void {
+export function queueSaveCloudUserData(
+  uid: string,
+  data: Partial<CloudUserData>,
+  onSuccess?: () => void
+): void {
   const services = getFirebaseServices();
   if (!services) return;
 
@@ -296,10 +328,11 @@ export function queueSaveCloudUserData(uid: string, data: Partial<CloudUserData>
     try {
       const docRef = doc(services.db, 'users', targetUid);
       await setDoc(docRef, toSave, { merge: true });
+      if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Failed to sync data to Firestore:', err);
     }
-  }, 1000);
+  }, 400);
 }
 
 /**
