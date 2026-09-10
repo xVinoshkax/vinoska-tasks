@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Check,
   Link2,
-  ExternalLink
+  ExternalLink,
+  FolderKanban
 } from 'lucide-react';
 import type { Task, Project, CustomPriority, RecurringType } from '../types';
 import { playCheckClick, playChime } from '../utils/sound';
@@ -153,9 +154,25 @@ export const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
     if (!dateStr) {
       onUpdateTask({ ...task, due_date: null, updated_at: Math.floor(Date.now() / 1000) });
     } else {
-      const timestamp = Math.floor(new Date(dateStr).getTime() / 1000);
-      onUpdateTask({ ...task, due_date: timestamp, updated_at: Math.floor(Date.now() / 1000) });
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const current = task.due_date ? new Date(task.due_date * 1000) : new Date();
+      const hours = task.due_date ? current.getHours() : 23;
+      const minutes = task.due_date ? current.getMinutes() : 59;
+      const newDate = new Date(y, m - 1, d, hours, minutes, 0);
+      onUpdateTask({ ...task, due_date: Math.floor(newDate.getTime() / 1000), updated_at: Math.floor(Date.now() / 1000) });
     }
+  };
+
+  const handleTimeChange = (timeStr: string) => {
+    const current = task.due_date ? new Date(task.due_date * 1000) : new Date();
+    if (!timeStr) {
+      // All day
+      current.setHours(23, 59, 59, 0);
+    } else {
+      const [h, m] = timeStr.split(':').map(Number);
+      current.setHours(h, m, 0, 0);
+    }
+    onUpdateTask({ ...task, due_date: Math.floor(current.getTime() / 1000), updated_at: Math.floor(Date.now() / 1000) });
   };
 
   const handleAddSubtask = (e: React.FormEvent) => {
@@ -189,8 +206,19 @@ export const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
     onUpdateTask({ ...task, subtasks: updatedSubtasks, updated_at: Math.floor(Date.now() / 1000) });
   };
 
-  const dateInputValue = task.due_date
-    ? new Date(task.due_date * 1000).toISOString().split('T')[0]
+  const taskDueDateObj = task.due_date ? new Date(task.due_date * 1000) : null;
+
+  const dateInputValue = taskDueDateObj
+    ? `${taskDueDateObj.getFullYear()}-${String(taskDueDateObj.getMonth() + 1).padStart(2, '0')}-${String(taskDueDateObj.getDate()).padStart(2, '0')}`
+    : '';
+
+  const isTaskAllDay = taskDueDateObj
+    ? (taskDueDateObj.getHours() === 23 && taskDueDateObj.getMinutes() === 59) ||
+      (taskDueDateObj.getHours() === 0 && taskDueDateObj.getMinutes() === 0)
+    : true;
+
+  const timeInputValue = taskDueDateObj && !isTaskAllDay
+    ? `${String(taskDueDateObj.getHours()).padStart(2, '0')}:${String(taskDueDateObj.getMinutes()).padStart(2, '0')}`
     : '';
 
   const currentPriority = priorities.find(p => p.id === task.priority) || priorities[0];
@@ -360,37 +388,92 @@ export const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
           </div>
         </div>
 
-        {/* Properties grid: Project & Due Date Calendar */}
-        <div className="grid grid-cols-2 gap-2.5 text-xs">
-          {/* Project */}
-          <div className="p-3 rounded-2xl bg-[#1c1c1e] border border-white/[0.06] space-y-1">
-            <span className="text-slate-400 block font-medium">Проект</span>
-            <select
-              value={task.project_id || ''}
-              onChange={(e) => handleProjectChange(e.target.value || null)}
-              className="w-full bg-[#242428] text-slate-200 focus:outline-none cursor-pointer rounded-lg p-1.5"
-            >
-              <option value="" className="bg-[#242428] text-slate-200">Без проекта</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#242428] text-slate-200">
-                  {p.name}
-                </option>
-              ))}
-            </select>
+        {/* Project Selection Row */}
+        <div className="p-3.5 rounded-2xl bg-[#1c1c1e] border border-white/[0.06] flex items-center justify-between text-xs">
+          <span className="text-slate-300 font-medium flex items-center gap-2">
+            <FolderKanban size={14} className="text-indigo-400" />
+            Проект
+          </span>
+          <select
+            value={task.project_id || ''}
+            onChange={(e) => handleProjectChange(e.target.value || null)}
+            className="bg-[#242428] text-slate-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none border border-white/10 hover:border-white/20 transition cursor-pointer max-w-[210px] truncate"
+          >
+            <option value="" className="bg-[#242428] text-slate-200">Без проекта</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id} className="bg-[#242428] text-slate-200">
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Due Date & Time Full-Width Card */}
+        <div className="p-3.5 rounded-2xl bg-[#1c1c1e] border border-white/[0.06] space-y-3 text-xs">
+          {/* Card Header */}
+          <div className="flex items-center justify-between">
+            <span className="text-slate-300 font-medium flex items-center gap-2">
+              <Calendar size={14} className="text-indigo-400" />
+              Срок и время выполнения
+            </span>
+            {task.due_date && (
+              <button
+                type="button"
+                onClick={() => onUpdateTask({ ...task, due_date: null, updated_at: Math.floor(Date.now() / 1000) })}
+                className="text-[11px] text-slate-400 hover:text-rose-400 transition font-medium"
+                title="Очистить дату и время"
+              >
+                Сбросить
+              </button>
+            )}
           </div>
 
-          {/* Due Date mini calendar */}
-          <div className="p-3 rounded-2xl bg-[#1c1c1e] border border-white/[0.06] space-y-1">
-            <span className="text-slate-400 block font-medium flex items-center gap-1">
-              <Calendar size={12} className="text-slate-400" />
-              Дата выполнения
-            </span>
-            <input
-              type="date"
-              value={dateInputValue}
-              onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#242428] text-slate-200 rounded-lg p-1.5 text-xs focus:outline-none border border-transparent focus:border-indigo-500 cursor-pointer"
-            />
+          {/* Date & Time 2-Column Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Date Input */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                Дата
+              </label>
+              <input
+                type="date"
+                value={dateInputValue}
+                onChange={(e) => handleDateChange(e.target.value)}
+                className="w-full bg-[#242428] text-slate-100 rounded-xl px-3 py-2 text-xs focus:outline-none border border-white/10 focus:border-indigo-500 transition cursor-pointer [color-scheme:dark]"
+              />
+            </div>
+
+            {/* Time Input */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Время
+                </label>
+                {task.due_date && (
+                  !isTaskAllDay ? (
+                    <button
+                      type="button"
+                      onClick={() => handleTimeChange('')}
+                      className="text-[10px] text-indigo-400 hover:text-indigo-300 transition"
+                      title="Сделать задачу на весь день (дедлайн 23:59)"
+                    >
+                      Весь день
+                    </button>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 font-normal">
+                      Весь день
+                    </span>
+                  )
+                )}
+              </div>
+              <input
+                type="time"
+                value={timeInputValue}
+                onChange={(e) => handleTimeChange(e.target.value)}
+                disabled={!task.due_date}
+                className="w-full bg-[#242428] text-slate-100 rounded-xl px-3 py-2 text-xs focus:outline-none border border-white/10 focus:border-indigo-500 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed [color-scheme:dark]"
+              />
+            </div>
           </div>
         </div>
 

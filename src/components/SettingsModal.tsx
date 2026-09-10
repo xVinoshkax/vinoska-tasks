@@ -14,6 +14,8 @@ interface SettingsModalProps {
   onClose: () => void;
   colorCardsByProject: boolean;
   onToggleColorCardsByProject: (val: boolean) => void;
+  showTaskTime?: boolean;
+  onToggleShowTaskTime?: (val: boolean) => void;
   onOpenManageProperties: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
@@ -27,6 +29,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   colorCardsByProject,
   onToggleColorCardsByProject,
+  showTaskTime = true,
+  onToggleShowTaskTime,
   onOpenManageProperties,
   soundOn,
   onToggleSound,
@@ -240,7 +244,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
 
-          {/* Section 3: Properties management link */}
+          {/* Section 3: Exact Task Time Display on Cards */}
+          <div className="p-4 rounded-2xl bg-[#1c1f2a] border border-white/[0.06] flex items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-semibold text-white block">
+                Отображать точное время на карточках
+              </span>
+              <span className="text-[11px] text-slate-400 block mt-0.5">
+                Показывает часы и минуты дедлайна рядом с датой на карточках задач
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onToggleShowTaskTime?.(!showTaskTime)}
+              className={`w-11 h-6 rounded-full transition-colors relative shrink-0 p-0.5 ${
+                showTaskTime ? 'bg-emerald-500' : 'bg-zinc-700'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
+                  showTaskTime ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Section 4: Properties management link */}
           <div className="pt-1">
             <button
               type="button"

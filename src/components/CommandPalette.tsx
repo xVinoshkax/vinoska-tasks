@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Calendar, Inbox, Volume2, X, Settings2, Sparkles } from 'lucide-react';
+import { Search, Plus, Calendar, Inbox, Volume2, X, Settings2, Sparkles, CalendarDays } from 'lucide-react';
 import type { Task, ViewFilter } from '../types';
 
 interface CommandPaletteProps {
@@ -143,6 +143,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               <div className="flex items-center gap-2.5">
                 <Sparkles size={16} className="text-violet-400" />
                 <span>Перейти в «Привычки»</span>
+              </div>
+            </button>
+          )}
+
+          {/* View Calendar */}
+          {(!query || 'календарь'.includes(query.toLowerCase()) || 'calendar'.includes(query.toLowerCase())) && (
+            <button
+              onClick={() => {
+                onClose();
+                onSelectView('calendar');
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-200 hover:bg-white/10 hover:text-white transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <CalendarDays size={16} className="text-pink-400" />
+                <span>Перейти в «Календарь»</span>
               </div>
             </button>
           )}

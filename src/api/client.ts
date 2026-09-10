@@ -124,6 +124,7 @@ export function getInitialActivity(): ActivityDay[] {
 }
 
 const STORAGE_KEY_PROJECT_CARD_COLORS = 'linear_lite_project_card_colors';
+const STORAGE_KEY_SHOW_TASK_TIME = 'linear_lite_show_task_time';
 
 export class TaskStorage {
   static getTasks(): Task[] {
@@ -240,6 +241,24 @@ export class TaskStorage {
   static saveColorCardsByProject(enabled: boolean): void {
     try {
       localStorage.setItem(STORAGE_KEY_PROJECT_CARD_COLORS, JSON.stringify(enabled));
+    } catch {
+      // ignore
+    }
+  }
+
+  static getShowTaskTime(): boolean {
+    try {
+      const val = localStorage.getItem(STORAGE_KEY_SHOW_TASK_TIME);
+      if (val !== null) return JSON.parse(val);
+    } catch {
+      // ignore
+    }
+    return true; // Default to true so user sees time when set, but can toggle in settings
+  }
+
+  static saveShowTaskTime(enabled: boolean): void {
+    try {
+      localStorage.setItem(STORAGE_KEY_SHOW_TASK_TIME, JSON.stringify(enabled));
     } catch {
       // ignore
     }

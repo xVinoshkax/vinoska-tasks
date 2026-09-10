@@ -13,7 +13,8 @@ import {
   Layers,
   Cloud,
   LogOut,
-  X
+  X,
+  CalendarDays
 } from 'lucide-react';
 import type { Project, ViewFilter, ActivityDay, Habit, Task, UserProfile, SyncStatus } from '../types';
 import { toggleSound, isSoundEnabled } from '../utils/sound';
@@ -174,6 +175,7 @@ interface SidebarProps {
     inbox: number;
     today: number;
     upcoming: number;
+    calendar?: number;
     all: number;
     done: number;
     projectCounts: Record<string, number>;
@@ -309,6 +311,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`p-2 rounded-xl transition ${activeView === 'upcoming' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}
           >
             <Clock size={17} />
+          </button>
+          <button
+            onClick={() => onSelectView('calendar')}
+            title={`Календарь (${counts.calendar ?? 0})`}
+            className={`p-2 rounded-xl transition ${activeView === 'calendar' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}
+          >
+            <CalendarDays size={17} />
           </button>
           <button
             onClick={() => onSelectView('all')}
@@ -473,6 +482,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onSelectView('upcoming')}
             />
             <NavItem
+              icon={<CalendarDays size={15} className="text-slate-400 group-hover:text-slate-200" />}
+              label="Календарь"
+              count={counts.calendar}
+              active={activeView === 'calendar'}
+              onClick={() => onSelectView('calendar')}
+            />
+            <NavItem
               icon={<Layers size={15} className="text-slate-400 group-hover:text-slate-200" />}
               label="Все задачи"
               count={counts.all}
@@ -570,6 +586,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <MiniMonthCalendar
               tasks={tasks}
               onSelectDate={onSelectDate}
+              onOpenFullCalendar={() => onSelectView('calendar')}
             />
           </div>
         )}
@@ -741,6 +758,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
               />
               <NavItem
+                icon={<CalendarDays size={15} className="text-slate-400 group-hover:text-slate-200" />}
+                label="Календарь"
+                count={counts.calendar}
+                active={activeView === 'calendar'}
+                onClick={() => {
+                  onSelectView('calendar');
+                  onCloseMobile?.();
+                }}
+              />
+              <NavItem
                 icon={<Layers size={15} className="text-slate-400 group-hover:text-slate-200" />}
                 label="Все задачи"
                 count={counts.all}
@@ -855,6 +882,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 tasks={tasks}
                 onSelectDate={(d) => {
                   onSelectDate(d);
+                  onCloseMobile?.();
+                }}
+                onOpenFullCalendar={() => {
+                  onSelectView('calendar');
                   onCloseMobile?.();
                 }}
               />

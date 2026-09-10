@@ -57,7 +57,8 @@ export interface Task {
   tags?: Tag[];
 }
 
-export type ViewFilter = 'inbox' | 'today' | 'upcoming' | 'all' | 'done' | string;
+export type ViewFilter = 'inbox' | 'today' | 'upcoming' | 'calendar' | 'all' | 'done' | string;
+export type CalendarScale = 'month' | 'week' | 'day';
 
 export type ThemeId = 'dark' | 'light';
 export type HabitsLayoutMode = 'side' | 'bottom';

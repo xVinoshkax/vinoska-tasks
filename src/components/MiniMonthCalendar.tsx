@@ -1,15 +1,17 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Maximize2 } from 'lucide-react';
 import type { Task } from '../types';
 
 interface MiniMonthCalendarProps {
   tasks: Task[];
   onSelectDate: (dateStr: string) => void;
+  onOpenFullCalendar?: () => void;
 }
 
 export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
   tasks,
   onSelectDate,
+  onOpenFullCalendar,
 }) => {
   const [viewDate, setViewDate] = React.useState(() => new Date());
 
@@ -144,11 +146,24 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
     <div className="p-2.5 rounded-2xl bg-white dark:bg-[#161820] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-2 transition-all">
       {/* Header: Month title & controls */}
       <div className="flex items-center justify-between px-0.5">
-        <div className="flex items-center gap-1.5">
-          <CalendarIcon size={12} className="text-indigo-600 dark:text-indigo-400" />
-          <span className="text-[11px] font-semibold text-slate-800 dark:text-white tracking-tight">
-            {monthNames[month]} {year}
-          </span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <button
+            type="button"
+            onClick={onOpenFullCalendar}
+            disabled={!onOpenFullCalendar}
+            className={`flex items-center gap-1.5 text-left group min-w-0 ${
+              onOpenFullCalendar ? 'hover:text-indigo-400 cursor-pointer' : ''
+            }`}
+            title={onOpenFullCalendar ? 'Открыть подробный календарь' : undefined}
+          >
+            <CalendarIcon size={12} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="text-[11px] font-semibold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors tracking-tight truncate">
+              {monthNames[month]} {year}
+            </span>
+            {onOpenFullCalendar && (
+              <Maximize2 size={10} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            )}
+          </button>
         </div>
 
         <div className="flex items-center gap-0.5">

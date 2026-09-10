@@ -33,6 +33,7 @@ import { ProjectModal } from './components/ProjectModal';
 import { HabitsColumn } from './components/HabitsColumn';
 import { HabitsFullView } from './components/HabitsFullView';
 import { HabitModal } from './components/HabitModal';
+import { CalendarFullView } from './components/CalendarFullView';
 import { NewTaskForDateModal } from './components/NewTaskForDateModal';
 import { TaskFilterBar } from './components/TaskFilterBar';
 import { AuthModal } from './components/AuthModal';
@@ -76,6 +77,7 @@ export function App() {
   };
 
   const [colorCardsByProject, setColorCardsByProject] = React.useState<boolean>(() => TaskStorage.getColorCardsByProject());
+  const [showTaskTime, setShowTaskTime] = React.useState<boolean>(() => TaskStorage.getShowTaskTime());
   const [soundOn, setSoundOn] = React.useState(isSoundEnabled());
 
   const [activeView, setActiveView] = React.useState<ViewFilter>('today');
@@ -92,6 +94,7 @@ export function App() {
   const [isHabitModalOpen, setIsHabitModalOpen] = React.useState(false);
   const [editingHabit, setEditingHabit] = React.useState<Habit | null>(null);
   const [dateForNewTask, setDateForNewTask] = React.useState<string | null>(null);
+  const [hourForNewTask, setHourForNewTask] = React.useState<number | null>(null);
   const [quickTitle, setQuickTitle] = React.useState('');
 
   // Firebase Auth & Cloud Sync state
@@ -383,6 +386,12 @@ export function App() {
   const handleToggleColorCards = (val: boolean) => {
     setColorCardsByProject(val);
     TaskStorage.saveColorCardsByProject(val);
+  };
+
+  // Exact task time display handler
+  const handleToggleShowTaskTime = (val: boolean) => {
+    setShowTaskTime(val);
+    TaskStorage.saveShowTaskTime(val);
   };
 
   // Keyboard shortcuts
@@ -703,6 +712,7 @@ export function App() {
       inbox: tasks.filter((t) => t.status === 'inbox').length,
       today: tasks.filter((t) => t.status !== 'done' && t.due_date && t.due_date <= todaySec).length,
       upcoming: tasks.filter((t) => t.status !== 'done' && t.due_date && t.due_date > todaySec).length,
+      calendar: tasks.filter((t) => t.status !== 'done' && t.due_date !== null).length,
       all: tasks.length,
       done: tasks.filter((t) => t.status === 'done').length,
       projectCounts,
@@ -739,6 +749,7 @@ export function App() {
   const viewTitle = React.useMemo(() => {
     if (activeView === 'inbox') return 'Входящие';
     if (activeView === 'today') return 'Сегодня';
+    if (activeView === 'calendar') return 'Календарь задач';
     if (activeView === 'habits') return 'Трекер привычек';
     if (activeView === 'upcoming') return 'Предстоящие';
     if (activeView === 'done') return 'Выполнено';
@@ -807,7 +818,7 @@ export function App() {
             </button>
             <h1 className="text-sm font-semibold text-white tracking-tight truncate">{viewTitle}</h1>
             <span className="text-xs font-mono text-slate-400 bg-white/[0.06] px-2 py-0.5 rounded-full shrink-0">
-              {activeView === 'habits' ? habits.length : filteredTasks.length}
+              {activeView === 'habits' ? habits.length : activeView === 'calendar' ? counts.calendar : filteredTasks.length}
             </span>
           </div>
 
@@ -859,7 +870,7 @@ export function App() {
                 <span className="hidden sm:inline">Новая привычка</span>
                 <span className="sm:hidden">Создать</span>
               </button>
-            ) : (
+            ) : activeView === 'calendar' ? null : (
               <>
                 {/* Clear all tasks in current view button */}
                 {filteredTasks.length > 0 && (
@@ -909,9 +920,25 @@ export function App() {
           </div>
         </header>
 
-        {/* Main Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 sm:p-6 pb-28 md:pb-6 space-y-4">
-          {activeView === 'habits' ? (
+        {/* Main Content Area */}
+        {activeView === 'calendar' ? (
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden pb-20 md:pb-0">
+            <CalendarFullView
+              tasks={tasks}
+              projects={projects}
+              priorities={priorities}
+              onUpdateTask={handleUpdateTask}
+              onToggleComplete={handleToggleComplete}
+              onOpenDetail={handleOpenDetail}
+              onCreateTaskForDate={(dateStr, hour) => {
+                setDateForNewTask(dateStr);
+                setHourForNewTask(hour ?? null);
+              }}
+            />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto px-3.5 py-4 sm:p-6 pb-28 md:pb-6 space-y-4">
+            {activeView === 'habits' ? (
             <div className="max-w-4xl w-full mx-auto">
               <HabitsFullView
                 habits={habits}
@@ -969,6 +996,7 @@ export function App() {
                     task={focusTask}
                     project={projects.find((p) => p.id === focusTask.project_id)}
                     colorCardsByProject={colorCardsByProject}
+                    showTaskTime={showTaskTime}
                     onToggleComplete={handleToggleComplete}
                     onOpenDetail={handleOpenDetail}
                     onRemoveFocus={handleRemoveFocus}
@@ -997,6 +1025,7 @@ export function App() {
                       project={projects.find((p) => p.id === t.project_id)}
                       priorities={priorities}
                       colorCardsByProject={colorCardsByProject}
+                      showTaskTime={showTaskTime}
                       isSelected={selectedTask?.id === t.id}
                       isBatchChecked={selectedTaskIds.includes(t.id)}
                       onToggleBatchCheck={isBatchMode ? handleToggleBatchCheck : undefined}
@@ -1011,6 +1040,7 @@ export function App() {
             </div>
           )}
         </div>
+        )}
 
         {/* Floating Batch Actions Bar (when tasks are selected) */}
         {selectedTaskIds.length > 0 && (
@@ -1202,6 +1232,8 @@ export function App() {
         onClose={() => setIsSettingsOpen(false)}
         colorCardsByProject={colorCardsByProject}
         onToggleColorCardsByProject={handleToggleColorCards}
+        showTaskTime={showTaskTime}
+        onToggleShowTaskTime={handleToggleShowTaskTime}
         onOpenManageProperties={() => setIsManagePropsOpen(true)}
         soundOn={soundOn}
         onToggleSound={() => {
@@ -1252,10 +1284,11 @@ export function App() {
         onDelete={handleDeleteHabit}
       />
 
-      {/* New Task for Date Modal (from Mini Month Calendar) */}
+      {/* New Task for Date Modal (from Mini Month Calendar or Full Calendar) */}
       <NewTaskForDateModal
         isOpen={dateForNewTask !== null}
         dateStr={dateForNewTask}
+        initialHour={hourForNewTask}
         projects={projects}
         priorities={priorities}
         existingTasks={tasks.filter((t) => {
@@ -1266,7 +1299,10 @@ export function App() {
           const day = String(d.getDate()).padStart(2, '0');
           return `${y}-${m}-${day}` === dateForNewTask;
         })}
-        onClose={() => setDateForNewTask(null)}
+        onClose={() => {
+          setDateForNewTask(null);
+          setHourForNewTask(null);
+        }}
         onCreateTask={handleCreateTaskForDate}
       />
     </div>

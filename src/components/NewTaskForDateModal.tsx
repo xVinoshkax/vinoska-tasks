@@ -6,6 +6,7 @@ import { playCheckClick } from '../utils/sound';
 interface NewTaskForDateModalProps {
   isOpen: boolean;
   dateStr: string | null;
+  initialHour?: number | null;
   projects: Project[];
   priorities: CustomPriority[];
   existingTasks: Task[];
@@ -23,6 +24,7 @@ interface NewTaskForDateModalProps {
 export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
   isOpen,
   dateStr,
+  initialHour,
   projects,
   priorities,
   existingTasks,
@@ -32,6 +34,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
   const [title, setTitle] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [linkUrl, setLinkUrl] = React.useState('');
+  const [timeStr, setTimeStr] = React.useState('');
   const [selectedPriority, setSelectedPriority] = React.useState('none');
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
   const [showDetails, setShowDetails] = React.useState(false);
@@ -44,12 +47,17 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
       setTitle('');
       setDescription('');
       setLinkUrl('');
+      setTimeStr(
+        initialHour !== undefined && initialHour !== null
+          ? `${String(initialHour).padStart(2, '0')}:00`
+          : ''
+      );
       setSelectedPriority('none');
       setSelectedProjectId(null);
       setShowDetails(false);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [isOpen, dateStr]);
+  }, [isOpen, dateStr, initialHour]);
 
   // Handle escape key
   React.useEffect(() => {
@@ -66,7 +74,10 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
 
   // Format Russian date
   const [year, month, day] = dateStr.split('-').map(Number);
-  const targetDate = new Date(year, month - 1, day, 23, 59, 59);
+  const targetDate =
+    initialHour !== undefined && initialHour !== null
+      ? new Date(year, month - 1, day, initialHour, 0, 0)
+      : new Date(year, month - 1, day, 23, 59, 59);
 
   const formattedDate = targetDate.toLocaleDateString('ru-RU', {
     weekday: 'long',
@@ -75,6 +86,10 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
     year: 'numeric',
   });
   const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+  const timeSnippet =
+    initialHour !== undefined && initialHour !== null
+      ? ` · ${String(initialHour).padStart(2, '0')}:00`
+      : '';
 
   // Check if today / tomorrow
   const now = new Date();
@@ -87,7 +102,17 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
     if (e) e.preventDefault();
     if (!title.trim()) return;
 
-    const due_date = Math.floor(targetDate.getTime() / 1000);
+    let finalDate: Date;
+    if (timeStr.trim()) {
+      const [h, m] = timeStr.split(':').map(Number);
+      finalDate = new Date(year, month - 1, day, h, m, 0);
+    } else if (initialHour !== undefined && initialHour !== null) {
+      finalDate = new Date(year, month - 1, day, initialHour, 0, 0);
+    } else {
+      finalDate = new Date(year, month - 1, day, 23, 59, 59);
+    }
+
+    const due_date = Math.floor(finalDate.getTime() / 1000);
 
     onCreateTask({
       title: title.trim(),
@@ -126,7 +151,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                 )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {capitalizedDate}
+                {capitalizedDate}{timeSnippet}
               </p>
             </div>
           </div>
@@ -177,6 +202,34 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
               placeholder="Что нужно сделать?..."
               className="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08] text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition shadow-inner"
             />
+          </div>
+
+          {/* Time Selector */}
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08]">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+              <Clock size={14} className="text-indigo-500" />
+              <span>Время задачи:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={timeStr}
+                onChange={(e) => setTimeStr(e.target.value)}
+                className="bg-white dark:bg-[#1c1c1e] text-xs text-slate-900 dark:text-white px-3 py-1.5 rounded-xl border border-black/[0.08] dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer"
+              />
+              {timeStr ? (
+                <button
+                  type="button"
+                  onClick={() => setTimeStr('')}
+                  className="text-[10px] text-slate-400 hover:text-rose-400 transition"
+                  title="Убрать точное время (на весь день)"
+                >
+                  Сбросить
+                </button>
+              ) : (
+                <span className="text-[11px] text-slate-400 font-mono">Весь день</span>
+              )}
+            </div>
           </div>
 
           {/* Details / Notes (Optional Expandable) */}

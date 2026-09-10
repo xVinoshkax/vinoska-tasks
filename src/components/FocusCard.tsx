@@ -7,6 +7,7 @@ interface FocusCardProps {
   task: Task;
   project?: Project;
   colorCardsByProject?: boolean;
+  showTaskTime?: boolean;
   onToggleComplete: (task: Task) => void;
   onOpenDetail: (task: Task) => void;
   onRemoveFocus: (task: Task) => void;
@@ -17,6 +18,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
   task,
   project,
   colorCardsByProject,
+  showTaskTime,
   onToggleComplete,
   onOpenDetail,
   onRemoveFocus,
@@ -87,6 +89,18 @@ export const FocusCard: React.FC<FocusCardProps> = ({
   const completedSubtasks = task.subtasks?.filter(s => s.is_completed).length || 0;
   const totalSubtasks = task.subtasks?.length || 0;
 
+  const getTaskTimeSnippet = (timestampSec: number | null) => {
+    if (!timestampSec || !showTaskTime) return null;
+    const d = new Date(timestampSec * 1000);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    const isAllDay = (h === 23 && m === 59) || (h === 0 && m === 0);
+    if (isAllDay) return null;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  const timeSnippet = getTaskTimeSnippet(task.due_date);
+
   // 3-Day Deadline Alert Logic (day-normalized)
   const getDeadlineAlert = (timestampSec: number | null, isDone: boolean) => {
     if (!timestampSec || isDone) return null;
@@ -97,30 +111,32 @@ export const FocusCard: React.FC<FocusCardProps> = ({
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const diffDays = Math.round((dueDay - today) / 86400000);
 
+    const timeSuffix = timeSnippet ? ` · ${timeSnippet}` : '';
+
     if (diffDays < 0) {
       return {
-        label: 'Просрочено',
+        label: `Просрочено${timeSuffix}`,
         className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30 font-medium',
         icon: AlertTriangle,
       };
     }
     if (diffDays === 0) {
       return {
-        label: 'Дедлайн сегодня',
+        label: `Дедлайн сегодня${timeSuffix}`,
         className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-medium',
         icon: AlertTriangle,
       };
     }
     if (diffDays === 1) {
       return {
-        label: 'Дедлайн завтра',
+        label: `Дедлайн завтра${timeSuffix}`,
         className: 'bg-amber-500/10 text-amber-700 dark:text-amber-200 border-amber-500/20',
         icon: Clock,
       };
     }
     if (diffDays <= 3) {
       return {
-        label: `Осталось ${diffDays} дн.`,
+        label: `Осталось ${diffDays} дн.${timeSuffix}`,
         className: 'bg-orange-500/10 text-orange-700 dark:text-orange-200 border-orange-500/20',
         icon: Clock,
       };
@@ -133,7 +149,8 @@ export const FocusCard: React.FC<FocusCardProps> = ({
   const formatDate = (timestampSec: number | null) => {
     if (!timestampSec) return null;
     const d = new Date(timestampSec * 1000);
-    return d.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
+    const baseDate = d.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' });
+    return timeSnippet ? `${baseDate} · ${timeSnippet}` : baseDate;
   };
 
   const dateLabel = formatDate(task.due_date);
