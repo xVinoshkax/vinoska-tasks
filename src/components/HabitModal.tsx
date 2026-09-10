@@ -62,7 +62,7 @@ export const HabitModal: React.FC<HabitModalProps> = ({
     const saved: Habit = {
       id: habit ? habit.id : `habit_${Date.now()}`,
       title: title.trim(),
-      description: description.trim() || undefined,
+      description: description.trim(),
       icon,
       color,
       frequency,

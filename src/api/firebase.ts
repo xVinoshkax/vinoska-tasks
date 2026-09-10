@@ -291,6 +291,15 @@ let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 let pendingData: Partial<CloudUserData> = {};
 let pendingUid: string | null = null;
 
+/**
+ * Deep sanitization for Firestore.
+ * Firestore throws a fatal error if any property in an object or array is undefined.
+ * JSON serialization completely strips all undefined properties cleanly.
+ */
+export function sanitizeForFirestore<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 export function cancelPendingCloudSave(): void {
   if (saveTimeout) {
     clearTimeout(saveTimeout);
@@ -301,15 +310,20 @@ export function cancelPendingCloudSave(): void {
 }
 
 /**
- * Debounced push to Firestore (400ms) to prevent quota thrashing and network spam.
+ * Debounced push to Firestore (300ms) to prevent quota thrashing and network spam.
+ * Automatically sanitizes all undefined fields to ensure Firestore never throws.
  */
 export function queueSaveCloudUserData(
   uid: string,
   data: Partial<CloudUserData>,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  onError?: (err: unknown) => void
 ): void {
   const services = getFirebaseServices();
-  if (!services) return;
+  if (!services) {
+    if (onError) onError(new Error('Firebase services not available'));
+    return;
+  }
 
   pendingUid = uid;
   pendingData = { ...pendingData, ...data };
@@ -327,12 +341,14 @@ export function queueSaveCloudUserData(
 
     try {
       const docRef = doc(services.db, 'users', targetUid);
-      await setDoc(docRef, toSave, { merge: true });
+      const cleanPayload = sanitizeForFirestore(toSave);
+      await setDoc(docRef, cleanPayload, { merge: true });
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error('Failed to sync data to Firestore:', err);
+      if (onError) onError(err);
     }
-  }, 400);
+  }, 300);
 }
 
 /**
@@ -343,5 +359,6 @@ export async function saveCloudUserDataImmediate(uid: string, data: Partial<Clou
   if (!services) return;
 
   const docRef = doc(services.db, 'users', uid);
-  await setDoc(docRef, { ...data, updatedAt: Date.now() }, { merge: true });
+  const cleanPayload = sanitizeForFirestore({ ...data, updatedAt: Date.now() });
+  await setDoc(docRef, cleanPayload, { merge: true });
 }

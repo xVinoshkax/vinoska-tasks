@@ -217,9 +217,17 @@ export function App() {
     (fieldUpdate: Partial<CloudUserData>) => {
       if (!currentUser || !isCloudReadyForWrite.current || isCloudIncoming.current) return;
       setSyncStatus('syncing');
-      queueSaveCloudUserData(currentUser.uid, fieldUpdate, () => {
-        setSyncStatus('synced');
-      });
+      queueSaveCloudUserData(
+        currentUser.uid,
+        fieldUpdate,
+        () => {
+          setSyncStatus('synced');
+        },
+        (err) => {
+          console.error('Cloud save error:', err);
+          setSyncStatus('error');
+        }
+      );
     },
     [currentUser]
   );

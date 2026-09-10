@@ -94,8 +94,8 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
       due_date,
       priority: selectedPriority,
       project_id: selectedProjectId,
-      description: description.trim() || undefined,
-      link_url: linkUrl.trim() || undefined,
+      description: description.trim(),
+      link_url: linkUrl.trim(),
     });
 
     playCheckClick();
