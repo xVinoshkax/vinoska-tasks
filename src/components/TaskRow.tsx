@@ -182,28 +182,28 @@ export const TaskRow: React.FC<TaskRowProps> = ({
     if (diffDays < 0) {
       return {
         label: `Просрочено${timeSuffix}`,
-        className: 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30 font-medium',
+        className: 'bg-rose-500/15 text-rose-300 border-rose-500/30 font-medium',
         icon: AlertTriangle,
       };
     }
     if (diffDays === 0) {
       return {
         label: `Дедлайн сегодня${timeSuffix}`,
-        className: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 font-medium',
+        className: 'bg-amber-500/15 text-amber-300 border-amber-500/30 font-medium',
         icon: AlertTriangle,
       };
     }
     if (diffDays === 1) {
       return {
         label: `Дедлайн завтра${timeSuffix}`,
-        className: 'bg-amber-500/10 text-amber-700 dark:text-amber-200 border-amber-500/20',
+        className: 'bg-amber-500/10 text-amber-200 border-amber-500/20',
         icon: Clock,
       };
     }
     if (diffDays <= 3) {
       return {
         label: `Осталось ${diffDays} дн.${timeSuffix}`,
-        className: 'bg-orange-500/10 text-orange-700 dark:text-orange-200 border-orange-500/20',
+        className: 'bg-orange-500/10 text-orange-200 border-orange-500/20',
         icon: Clock,
       };
     }

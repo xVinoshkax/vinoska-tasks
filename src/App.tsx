@@ -806,7 +806,7 @@ export function App() {
       {/* Column 3: Main Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-transparent">
         {/* Seamless Unified Header: exact h-14 shrink-0 and border-b */}
-        <header className="h-14 shrink-0 px-3.5 sm:px-6 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214] flex items-center justify-between">
+        <header className="h-14 shrink-0 px-3.5 sm:px-6 border-b border-white/[0.08] bg-[#121214] flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Mobile Hamburger Drawer Toggle */}
             <button

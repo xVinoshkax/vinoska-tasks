@@ -143,7 +143,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
   };
 
   return (
-    <div className="p-2.5 rounded-2xl bg-white dark:bg-[#161820] border border-black/[0.06] dark:border-white/[0.08] shadow-sm space-y-2 transition-all">
+    <div className="p-2.5 rounded-2xl bg-[#161820] border border-white/[0.08] shadow-sm space-y-2 transition-all">
       {/* Header: Month title & controls */}
       <div className="flex items-center justify-between px-0.5">
         <div className="flex items-center gap-1.5 min-w-0">
@@ -156,8 +156,8 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
             }`}
             title={onOpenFullCalendar ? 'Открыть подробный календарь' : undefined}
           >
-            <CalendarIcon size={12} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
-            <span className="text-[11px] font-semibold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors tracking-tight truncate">
+            <CalendarIcon size={12} className="text-indigo-400 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="text-[11px] font-semibold text-white group-hover:text-indigo-300 transition-colors tracking-tight truncate">
               {monthNames[month]} {year}
             </span>
             {onOpenFullCalendar && (
@@ -171,7 +171,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
             <button
               type="button"
               onClick={handleJumpToday}
-              className="text-[9px] font-medium px-1.5 py-0.5 rounded text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 transition mr-0.5"
+              className="text-[9px] font-medium px-1.5 py-0.5 rounded text-indigo-400 hover:bg-indigo-500/15 transition mr-0.5"
               title="Сегодня"
             >
               Сегодня
@@ -180,7 +180,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
           <button
             type="button"
             onClick={handlePrevMonth}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
             title="Предыдущий месяц"
           >
             <ChevronLeft size={12} />
@@ -188,7 +188,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
           <button
             type="button"
             onClick={handleNextMonth}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
             title="Следующий месяц"
           >
             <ChevronRight size={12} />
@@ -202,7 +202,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
           <div
             key={dayName}
             className={`text-[8px] font-semibold uppercase tracking-wider ${
-              idx >= 5 ? 'text-rose-500/80 dark:text-rose-400/80' : 'text-slate-400 dark:text-slate-500'
+              idx >= 5 ? 'text-rose-400/80' : 'text-slate-500'
             }`}
           >
             {dayName}
@@ -226,8 +226,8 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
                 cell.isToday
                   ? 'bg-indigo-600 text-white font-bold shadow-sm shadow-indigo-500/30'
                   : cell.isCurrentMonth
-                  ? 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10'
-                  : 'text-slate-400/40 dark:text-slate-600 hover:bg-slate-100/50 dark:hover:bg-white/5'
+                  ? 'text-slate-200 hover:bg-white/10'
+                  : 'text-slate-600 hover:bg-white/5'
               }`}
             >
               <span className="text-[10px] leading-none">{cell.dayNum}</span>
@@ -239,8 +239,8 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
                     cell.isToday
                       ? 'bg-white'
                       : cell.activeTaskCount > 0
-                      ? 'bg-indigo-500 dark:bg-indigo-400'
-                      : 'bg-emerald-500 dark:bg-emerald-400'
+                      ? 'bg-indigo-400'
+                      : 'bg-emerald-400'
                   }`}
                 />
               )}
@@ -250,7 +250,7 @@ export const MiniMonthCalendar: React.FC<MiniMonthCalendarProps> = ({
       </div>
 
       {/* Action Hint */}
-      <div className="pt-1.5 border-t border-black/[0.04] dark:border-white/[0.04] flex items-center justify-center gap-1 text-[9px] text-slate-400 dark:text-slate-500">
+      <div className="pt-1.5 border-t border-white/[0.04] flex items-center justify-center gap-1 text-[9px] text-slate-500">
         <Plus size={10} />
         <span>Кликните число для создания задачи</span>
       </div>

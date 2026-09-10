@@ -269,9 +269,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [activity, habits]);
 
   const desktopCollapsedAside = (
-    <aside className="hidden md:flex w-16 h-screen sticky top-0 flex-col items-center bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
+    <aside className="hidden md:flex w-16 h-screen sticky top-0 flex-col items-center bg-[#13151d] z-20 border-r border-white/[0.08] select-none">
         {/* Collapsed header matching h-14 */}
-        <div className="h-14 w-full flex items-center justify-center border-b border-black/[0.06] dark:border-white/[0.08]">
+        <div className="h-14 w-full flex items-center justify-center border-b border-white/[0.08]">
           <button
             onClick={onToggle}
             title="Развернуть меню ( [ )"
@@ -360,7 +360,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        <div className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] flex flex-col items-center gap-2">
+        <div className="p-3 border-t border-white/[0.08] flex flex-col items-center gap-2">
           {user ? (
             <button
               onClick={onLogout}
@@ -399,14 +399,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={onOpenSettings}
             title="Настройки и темы"
-            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
           >
             <Settings2 size={16} />
           </button>
           <button
             onClick={handleToggleSound}
             title={soundOn ? 'Выключить звук' : 'Включить звук'}
-            className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
           >
             {soundOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
@@ -415,9 +415,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   const desktopOpenAside = (
-    <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
+    <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-[#13151d] z-20 border-r border-white/[0.08] select-none">
       {/* Header bar: exactly h-14 (56px) and border-b */}
-      <div className="h-14 px-3.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#13151d]">
+      <div className="h-14 px-3.5 flex items-center justify-between border-b border-white/[0.08] bg-[#13151d]">
         <div className="flex items-center gap-2.5 min-w-0">
           <VinoskaLogo size={32} />
           <div className="min-w-0 flex flex-col justify-center">
@@ -593,7 +593,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer: Account & Quick Settings */}
-      <div className="p-3 border-t border-black/[0.06] dark:border-white/[0.08] space-y-2">
+      <div className="p-3 border-t border-white/[0.08] space-y-2">
         {user ? (
           <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition group">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -663,7 +663,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           onClick={onOpenSettings}
-          className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 w-full"
+          className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-white/5 w-full"
         >
           <Settings2 size={14} />
           <span>Настройки</span>
@@ -894,7 +894,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Footer: User Account & Settings */}
-        <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-black/[0.06] dark:border-white/[0.08] space-y-2">
+        <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-white/[0.08] space-y-2">
           {user ? (
             <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition group">
               <div className="flex items-center gap-2.5 min-w-0">
@@ -973,7 +973,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onOpenSettings();
               onCloseMobile?.();
             }}
-            className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 w-full"
+            className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-white/5 w-full"
           >
             <Settings2 size={14} />
             <span>Настройки</span>

@@ -362,33 +362,33 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-transparent select-none">
       {/* Top Toolbar */}
-      <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214] flex flex-wrap items-center justify-between gap-3 z-10">
+      <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-white/[0.08] bg-[#121214] flex flex-wrap items-center justify-between gap-3 z-10">
         {/* Left: Navigation Controls & Period Title */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-full p-0.5 shadow-sm">
+          <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] rounded-full p-0.5 shadow-sm">
             <button
               onClick={handlePrev}
               title="Предыдущий период"
-              className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+              className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition"
             >
               <ChevronLeft size={16} />
             </button>
             <button
               onClick={handleJumpToday}
-              className="text-xs font-medium px-2.5 py-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition"
+              className="text-xs font-medium px-2.5 py-1 text-indigo-400 hover:text-indigo-300 transition"
             >
               Сегодня
             </button>
             <button
               onClick={handleNext}
               title="Следующий период"
-              className="p-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+              className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition"
             >
               <ChevronRight size={16} />
             </button>
           </div>
 
-          <h2 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
             {headerTitle}
           </h2>
         </div>
@@ -396,7 +396,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
         {/* Right: Scale Switcher & Filter Tools */}
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Project Filter */}
-          <div className="flex items-center gap-1.5 bg-black/[0.04] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.08] rounded-full px-2.5 py-1 text-xs text-slate-600 dark:text-slate-300">
+          <div className="flex items-center gap-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full px-2.5 py-1 text-xs text-slate-300">
             <Filter size={12} className="text-slate-400" />
             <select
               value={selectedProjectId}
@@ -419,7 +419,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
             className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition ${
               showCompleted
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                : 'text-slate-400 border-black/[0.06] dark:border-white/[0.08] hover:text-white'
+                : 'text-slate-400 border-white/[0.08] hover:text-white'
             }`}
           >
             <CheckCircle2 size={12} />
@@ -427,13 +427,13 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
           </button>
 
           {/* Scale Switcher Tabs */}
-          <div className="flex items-center bg-black/[0.06] dark:bg-white/[0.06] p-0.5 rounded-xl border border-black/[0.06] dark:border-white/[0.08]">
+          <div className="flex items-center bg-white/[0.06] p-0.5 rounded-xl border border-white/[0.08]">
             <button
               onClick={() => setScale('month')}
               className={`flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-lg transition ${
                 scale === 'month'
-                  ? 'bg-white dark:bg-[#1f2128] text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[#1f2128] text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <LayoutGrid size={13} />
@@ -443,8 +443,8 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
               onClick={() => setScale('week')}
               className={`flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-lg transition ${
                 scale === 'week'
-                  ? 'bg-white dark:bg-[#1f2128] text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[#1f2128] text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <CalendarRange size={13} />
@@ -454,8 +454,8 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
               onClick={() => setScale('day')}
               className={`flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-lg transition ${
                 scale === 'day'
-                  ? 'bg-white dark:bg-[#1f2128] text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-[#1f2128] text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <CalendarDays size={13} />
@@ -523,8 +523,8 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
                         : cell.isToday
                         ? 'bg-amber-500/[0.06] border-amber-500/30 ring-1 ring-amber-500/20'
                         : cell.isCurrentMonth
-                        ? 'bg-white dark:bg-[#161820] border-black/[0.05] dark:border-white/[0.06] hover:border-white/20'
-                        : 'bg-black/[0.02] dark:bg-[#111217] border-transparent opacity-45'
+                        ? 'bg-[#161820] border-white/[0.06] hover:border-white/20'
+                        : 'bg-[#111217] border-transparent opacity-45'
                     }`}
                   >
                     {/* Cell Header: Day Number + Add Button */}
@@ -534,7 +534,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
                           cell.isToday
                             ? 'bg-amber-500 text-black font-bold shadow-sm'
                             : cell.isCurrentMonth
-                            ? 'text-slate-800 dark:text-slate-200'
+                            ? 'text-slate-200'
                             : 'text-slate-500'
                         }`}
                       >
@@ -634,14 +634,14 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
         {scale === 'week' && (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Week header: 7 columns */}
-            <div className="flex border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#14161d] shrink-0">
+            <div className="flex border-b border-white/[0.08] bg-[#14161d] shrink-0">
               {/* Corner gutter (width 54px for time labels) */}
-              <div className="w-14 shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] flex items-center justify-center p-2">
+              <div className="w-14 shrink-0 border-r border-white/[0.08] flex items-center justify-center p-2">
                 <Clock size={14} className="text-slate-500" />
               </div>
 
               {/* 7 Day Columns Headers */}
-              <div className="flex-1 grid grid-cols-7 divide-x divide-black/[0.06] dark:divide-white/[0.08]">
+              <div className="flex-1 grid grid-cols-7 divide-x divide-white/[0.08]">
                 {weekDays.map((d) => (
                   <div
                     key={d.dateStr}
@@ -662,7 +662,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
                       className={`inline-block text-sm font-bold font-mono px-2 py-0.5 rounded-full mt-0.5 ${
                         d.isToday
                           ? 'bg-amber-500 text-black shadow-sm'
-                          : 'text-slate-800 dark:text-white'
+                          : 'text-white'
                       }`}
                     >
                       {d.dayNum}
@@ -673,11 +673,11 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
             </div>
 
             {/* All-Day Tasks Section */}
-            <div className="flex border-b border-black/[0.06] dark:border-white/[0.08] bg-[#111217] shrink-0 max-h-28 overflow-y-auto">
-              <div className="w-14 shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] text-[9px] font-medium uppercase tracking-wider text-slate-500 p-2 flex items-center justify-center">
+            <div className="flex border-b border-white/[0.08] bg-[#111217] shrink-0 max-h-28 overflow-y-auto">
+              <div className="w-14 shrink-0 border-r border-white/[0.08] text-[9px] font-medium uppercase tracking-wider text-slate-500 p-2 flex items-center justify-center">
                 Весь день
               </div>
-              <div className="flex-1 grid grid-cols-7 divide-x divide-black/[0.06] dark:divide-white/[0.08]">
+              <div className="flex-1 grid grid-cols-7 divide-x divide-white/[0.08]">
                 {weekDays.map((d) => {
                   const dayTasks = (tasksByDate[d.dateStr] || []).filter(isTaskAllDay);
                   return (
@@ -700,7 +700,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
             {/* 24-Hour Vertical Time Grid */}
             <div ref={weekTimelineScrollRef} className="flex-1 overflow-y-auto relative flex">
               {/* Left Column: 24 Time Labels */}
-              <div className="w-14 shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] select-none min-h-[1344px]">
+              <div className="w-14 shrink-0 border-r border-white/[0.08] select-none min-h-[1344px]">
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div
                     key={hour}
@@ -715,7 +715,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
               </div>
 
               {/* 7 Columns Grid */}
-              <div className="flex-1 grid grid-cols-7 divide-x divide-black/[0.06] dark:divide-white/[0.08] relative">
+              <div className="flex-1 grid grid-cols-7 divide-x divide-white/[0.08] relative">
                 {/* Day Columns */}
                 {weekDays.map((d) => {
                   const dayTasks = tasksByDate[d.dateStr] || [];
@@ -761,7 +761,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
                               handleDropOnDate(d.dateStr, hour);
                             }}
                             onClick={() => onCreateTaskForDate(d.dateStr, hour)}
-                            className={`border-b border-black/[0.04] dark:border-white/[0.05] p-1 transition-colors group/slot relative ${
+                            className={`border-b border-white/[0.05] p-1 transition-colors group/slot relative ${
                               isHovered ? 'bg-indigo-500/20 ring-1 ring-indigo-500/40' : 'hover:bg-white/[0.02]'
                             }`}
                           >
@@ -842,10 +842,10 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
               const allDayTasks = dayTasks.filter(isTaskAllDay);
 
               return (
-                <div className="px-5 py-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#14161d] flex flex-col gap-2 shrink-0">
+                <div className="px-5 py-3 border-b border-white/[0.08] bg-[#14161d] flex flex-col gap-2 shrink-0">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+                      <h3 className="text-sm font-semibold text-white">
                         Задачи на день
                       </h3>
                       <span className="text-xs text-slate-400">
@@ -903,7 +903,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
             {/* Day 24-Hour Time Grid */}
             <div ref={dayTimelineScrollRef} className="flex-1 overflow-y-auto relative flex">
               {/* Left Column: 24 Time Labels */}
-              <div className="w-16 shrink-0 border-r border-black/[0.06] dark:border-white/[0.08] select-none min-h-[1344px]">
+              <div className="w-16 shrink-0 border-r border-white/[0.08] select-none min-h-[1344px]">
                 {Array.from({ length: 24 }).map((_, hour) => (
                   <div
                     key={hour}
@@ -963,7 +963,7 @@ export const CalendarFullView: React.FC<CalendarFullViewProps> = ({
                             handleDropOnDate(currentDayStr, hour);
                           }}
                           onClick={() => onCreateTaskForDate(currentDayStr, hour)}
-                          className={`border-b border-black/[0.04] dark:border-white/[0.06] px-4 py-1.5 flex items-center gap-3 transition-colors group relative cursor-pointer ${
+                          className={`border-b border-white/[0.06] px-4 py-1.5 flex items-center gap-3 transition-colors group relative cursor-pointer ${
                             isHovered ? 'bg-indigo-500/15 ring-1 ring-indigo-500/30' : 'hover:bg-white/[0.02]'
                           }`}
                         >

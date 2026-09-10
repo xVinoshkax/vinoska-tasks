@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 :root, [data-theme="dark"] {
   --bg-main: #0b0b0d;
   --bg-sidebar: #121214;
@@ -17,6 +19,12 @@
 }
 
 
+
+html {
+  color-scheme: dark;
+  background-color: var(--bg-main);
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
   margin: 0;

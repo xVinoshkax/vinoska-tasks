@@ -130,27 +130,27 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150 select-none">
       <div
-        className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#1c1c1e] border border-black/[0.08] dark:border-white/[0.1] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]"
+        className="w-full max-w-lg rounded-3xl bg-[#1c1c1e] border border-white/[0.1] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-5 pb-3 flex items-start justify-between border-b border-black/[0.06] dark:border-white/[0.08] bg-slate-50/50 dark:bg-white/[0.02]">
+        <div className="p-5 pb-3 flex items-start justify-between border-b border-white/[0.08] bg-white/[0.02]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/15 border border-indigo-500/25 flex items-center justify-center text-indigo-400 shadow-sm">
               <Calendar size={18} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight">
+                <h3 className="text-base font-semibold text-white tracking-tight">
                   Новая задача
                 </h3>
                 {isToday && (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Сегодня
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {capitalizedDate}{timeSnippet}
               </p>
             </div>
@@ -159,7 +159,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition"
           >
             <X size={18} />
           </button>
@@ -167,8 +167,8 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
 
         {/* Existing tasks scheduled on this day preview */}
         {existingTasks.length > 0 && (
-          <div className="px-5 py-2.5 bg-indigo-50/50 dark:bg-indigo-950/20 border-b border-indigo-100 dark:border-indigo-900/30">
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-700 dark:text-indigo-300 mb-1.5">
+          <div className="px-5 py-2.5 bg-indigo-950/20 border-b border-indigo-900/30">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-indigo-300 mb-1.5">
               <Clock size={12} />
               <span>Запланировано на этот день ({existingTasks.length}):</span>
             </div>
@@ -176,9 +176,9 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
               {existingTasks.map((t) => (
                 <div
                   key={t.id}
-                  className="flex items-center justify-between text-xs py-0.5 px-2 rounded-lg bg-white/70 dark:bg-white/5 border border-indigo-200/50 dark:border-white/5"
+                  className="flex items-center justify-between text-xs py-0.5 px-2 rounded-lg bg-white/5 border border-white/5"
                 >
-                  <span className={`truncate ${t.status === 'done' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                  <span className={`truncate ${t.status === 'done' ? 'line-through text-slate-400' : 'text-slate-200'}`}>
                     {t.title}
                   </span>
                   <span className="text-[10px] text-slate-400 shrink-0 ml-2">
@@ -200,13 +200,13 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Что нужно сделать?..."
-              className="w-full px-4 py-3 rounded-2xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08] text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition shadow-inner"
+              className="w-full px-4 py-3 rounded-2xl bg-[#252528] border border-white/[0.08] text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition shadow-inner"
             />
           </div>
 
           {/* Time Selector */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08]">
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#252528] border border-white/[0.08]">
+            <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
               <Clock size={14} className="text-indigo-500" />
               <span>Время задачи:</span>
             </div>
@@ -215,7 +215,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                 type="time"
                 value={timeStr}
                 onChange={(e) => setTimeStr(e.target.value)}
-                className="bg-white dark:bg-[#1c1c1e] text-xs text-slate-900 dark:text-white px-3 py-1.5 rounded-xl border border-black/[0.08] dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer"
+                className="bg-[#1c1c1e] text-xs text-white px-3 py-1.5 rounded-xl border border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 cursor-pointer"
               />
               {timeStr ? (
                 <button
@@ -240,7 +240,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Заметки или описание задачи..."
                 rows={2}
-                className="w-full px-4 py-2.5 rounded-2xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none transition"
+                className="w-full px-4 py-2.5 rounded-2xl bg-[#252528] border border-white/[0.08] text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none transition"
               />
 
               <div className="relative">
@@ -252,7 +252,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="Ссылка к задаче (https://...)"
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-100/80 dark:bg-[#252528] border border-black/[0.06] dark:border-white/[0.08] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#252528] border border-white/[0.08] text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition"
                 />
               </div>
             </div>
@@ -260,7 +260,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
             <button
               type="button"
               onClick={() => setShowDetails(true)}
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-medium"
+              className="text-xs text-indigo-400 hover:underline flex items-center gap-1 font-medium"
             >
               <Plus size={12} />
               <span>Добавить описание или ссылку</span>
@@ -269,7 +269,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
 
           {/* Priority Selector */}
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
               Приоритет
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -282,8 +282,8 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                     onClick={() => setSelectedPriority(p.id)}
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
                       isSelected
-                        ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                        : 'bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10'
+                        ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/50'
+                        : 'bg-white/[0.06] text-slate-300 hover:bg-white/10'
                     }`}
                   >
                     <span
@@ -300,7 +300,7 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
           {/* Project Selector */}
           {projects.length > 0 && (
             <div>
-              <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5 uppercase tracking-wider">
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
                 Проект
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -309,8 +309,8 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                   onClick={() => setSelectedProjectId(null)}
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
                     selectedProjectId === null
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                      : 'bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10'
+                      ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/50'
+                      : 'bg-white/[0.06] text-slate-300 hover:bg-white/10'
                   }`}
                 >
                   Входящие
@@ -324,8 +324,8 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
                       onClick={() => setSelectedProjectId(proj.id)}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${
                         isSelected
-                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-sm'
-                          : 'bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10'
+                          ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/50'
+                          : 'bg-white/[0.06] text-slate-300 hover:bg-white/10'
                       }`}
                     >
                       <span
@@ -341,11 +341,11 @@ export const NewTaskForDateModal: React.FC<NewTaskForDateModalProps> = ({
           )}
 
           {/* Modal Footer Buttons */}
-          <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.08] flex items-center justify-end gap-2">
+          <div className="pt-3 border-t border-white/[0.08] flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-black/5 dark:hover:bg-white/5 transition"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:bg-white/5 hover:text-white transition"
             >
               Отмена
             </button>
