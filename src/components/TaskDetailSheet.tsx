@@ -209,7 +209,7 @@ export const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
   };
 
   return (
-    <aside className="w-[400px] shrink-0 h-full flex flex-col border-l border-white/[0.08] bg-[#121214] z-20">
+    <aside className="fixed inset-0 z-50 md:relative md:z-20 md:w-[400px] md:shrink-0 h-full flex flex-col md:border-l border-white/[0.08] bg-[#121214] animate-in slide-in-from-bottom md:animate-none duration-200">
       {/* Header bar: exact h-14 shrink-0, matching main header precisely */}
       <div className="h-14 shrink-0 px-4 border-b border-white/[0.08] flex items-center justify-between bg-[#121214]">
         <div className="flex items-center gap-2">
@@ -305,7 +305,7 @@ export const TaskDetailSheet: React.FC<TaskDetailSheetProps> = ({
       </div>
 
       {/* Content body */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-5 pb-[max(2rem,calc(env(safe-area-inset-bottom)+1.5rem))] space-y-4">
         {/* Editable Title */}
         <textarea
           value={task.title}

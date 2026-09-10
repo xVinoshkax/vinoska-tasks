@@ -155,7 +155,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <button
             onClick={handleComplete}
-            className="mt-0.5 text-slate-400 hover:text-emerald-400 transition shrink-0"
+            className="mt-0.5 text-slate-400 hover:text-emerald-400 transition shrink-0 p-1 -m-1"
             title={isCompleted ? 'Вернуть в работу' : 'Завершить задачу'}
           >
             {isCompleted ? (

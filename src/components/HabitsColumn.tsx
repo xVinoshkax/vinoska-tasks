@@ -54,7 +54,7 @@ export const HabitsColumn: React.FC<HabitsColumnProps> = ({
 
   if (!isOpen) {
     return (
-      <aside className="w-14 shrink-0 h-screen sticky top-0 flex flex-col items-center bg-transparent z-10 select-none">
+      <aside className="hidden md:flex w-14 shrink-0 h-screen sticky top-0 flex-col items-center bg-transparent z-10 select-none">
         {/* Collapsed header: exact matching h-14 (56px) and border-b */}
         <div className="h-14 w-full flex items-center justify-center border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214]">
           <button
@@ -183,7 +183,7 @@ export const HabitsColumn: React.FC<HabitsColumnProps> = ({
   }
 
   return (
-    <aside className="w-72 shrink-0 h-screen sticky top-0 flex flex-col bg-transparent z-10 select-none">
+    <aside className="hidden md:flex w-72 shrink-0 h-screen sticky top-0 flex-col bg-transparent z-10 select-none">
       {/* Header bar: exactly matching h-14 (56px) and seamless across top */}
       <div className="h-14 px-3.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214] shrink-0">
         <div className="flex items-center gap-2">

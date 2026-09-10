@@ -12,7 +12,8 @@ import {
   Settings2,
   Layers,
   Cloud,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react';
 import type { Project, ViewFilter, ActivityDay, Habit, Task, UserProfile, SyncStatus } from '../types';
 import { toggleSound, isSoundEnabled } from '../utils/sound';
@@ -194,6 +195,8 @@ interface SidebarProps {
   syncStatus?: SyncStatus;
   onOpenAuth?: () => void;
   onLogout?: () => void;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -217,6 +220,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   syncStatus = 'offline',
   onOpenAuth,
   onLogout,
+  isMobileOpen = false,
+  onCloseMobile,
 }) => {
   const [soundOn, setSoundOn] = React.useState(isSoundEnabled());
 
@@ -261,9 +266,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return count;
   }, [activity, habits]);
 
-  if (!isOpen) {
-    return (
-      <aside className="w-16 h-screen sticky top-0 flex flex-col items-center bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
+  const desktopCollapsedAside = (
+    <aside className="hidden md:flex w-16 h-screen sticky top-0 flex-col items-center bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
         {/* Collapsed header matching h-14 */}
         <div className="h-14 w-full flex items-center justify-center border-b border-black/[0.06] dark:border-white/[0.08]">
           <button
@@ -399,11 +403,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
       </aside>
-    );
-  }
+  );
 
-  return (
-    <aside className="w-64 h-screen sticky top-0 flex flex-col bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
+  const desktopOpenAside = (
+    <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-[#13151d] z-20 border-r border-black/[0.06] dark:border-white/[0.08] select-none">
       {/* Header bar: exactly h-14 (56px) and border-b */}
       <div className="h-14 px-3.5 flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#13151d]">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -650,6 +653,310 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
     </aside>
+  );
+
+  const desktopAside = !isOpen ? desktopCollapsedAside : desktopOpenAside;
+
+  const mobileDrawer = isMobileOpen ? (
+    <div className="md:hidden fixed inset-0 z-50 flex">
+      {/* Dark semi-transparent backdrop */}
+      <div
+        className="fixed inset-0 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+        onClick={onCloseMobile}
+      />
+
+      {/* Slide-over Drawer Panel */}
+      <aside className="relative z-50 w-72 max-w-[85vw] h-full flex flex-col bg-[#13151d] border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-200 select-none">
+        {/* Header bar with Close Button */}
+        <div className="h-14 px-4 flex items-center justify-between border-b border-white/[0.08] bg-[#13151d] shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <VinoskaLogo size={30} />
+            <span className="font-bold text-xs tracking-wider text-white uppercase font-sans">
+              VINOSKA TASKS
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleToggleSound}
+              title={soundOn ? 'Звук включен' : 'Звук выключен'}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+            >
+              {soundOn ? <Volume2 size={15} /> : <VolumeX size={15} />}
+            </button>
+            <button
+              onClick={onCloseMobile}
+              title="Закрыть меню"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+            >
+              <X size={17} />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable Drawer Content */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-5">
+          {/* Views */}
+          <div>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3 mb-1.5">
+              Задачи
+            </div>
+            <nav className="space-y-0.5">
+              <NavItem
+                icon={<Inbox size={15} className="text-slate-400 group-hover:text-slate-200" />}
+                label="Входящие"
+                count={counts.inbox}
+                active={activeView === 'inbox'}
+                onClick={() => {
+                  onSelectView('inbox');
+                  onCloseMobile?.();
+                }}
+              />
+              <NavItem
+                icon={
+                  <div className="w-4 h-4 rounded-[4px] border border-amber-400/50 flex flex-col items-center justify-center overflow-hidden shrink-0 bg-amber-500/10">
+                    <div className="w-full h-1 bg-amber-400/70" />
+                    <span className="text-[8px] font-bold font-mono leading-none text-amber-300 mt-0.5">
+                      {new Date().getDate()}
+                    </span>
+                  </div>
+                }
+                label="Сегодня"
+                count={counts.today}
+                active={activeView === 'today'}
+                onClick={() => {
+                  onSelectView('today');
+                  onCloseMobile?.();
+                }}
+                variant="today"
+              />
+              <NavItem
+                icon={<Clock size={15} className="text-slate-400 group-hover:text-slate-200" />}
+                label="Предстоящие"
+                count={counts.upcoming}
+                active={activeView === 'upcoming'}
+                onClick={() => {
+                  onSelectView('upcoming');
+                  onCloseMobile?.();
+                }}
+              />
+              <NavItem
+                icon={<Layers size={15} className="text-slate-400 group-hover:text-slate-200" />}
+                label="Все задачи"
+                count={counts.all}
+                active={activeView === 'all'}
+                onClick={() => {
+                  onSelectView('all');
+                  onCloseMobile?.();
+                }}
+              />
+              <NavItem
+                icon={<CheckCircle2 size={15} className="text-slate-400 group-hover:text-emerald-400" />}
+                label="Выполнено"
+                count={counts.done}
+                active={activeView === 'done'}
+                onClick={() => {
+                  onSelectView('done');
+                  onCloseMobile?.();
+                }}
+              />
+              <div className="mt-2 pt-2 border-t border-white/[0.06]">
+                <NavItem
+                  icon={<Sparkles size={15} className="text-purple-400" />}
+                  label="Привычки"
+                  count={habitsRemainingToday}
+                  active={activeView === 'habits'}
+                  onClick={() => {
+                    onSelectView('habits');
+                    onCloseMobile?.();
+                  }}
+                  variant="habit"
+                />
+              </div>
+            </nav>
+          </div>
+
+          {/* Projects */}
+          <div>
+            <div className="flex items-center justify-between px-3 mb-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Проекты
+              </span>
+              <button
+                onClick={() => {
+                  onNewProject();
+                  onCloseMobile?.();
+                }}
+                className="text-xs text-slate-400 hover:text-white transition hover:bg-white/10 px-1 rounded"
+                title="Создать проект"
+              >
+                +
+              </button>
+            </div>
+            <nav className="space-y-0.5">
+              {projects.map((proj) => (
+                <div
+                  key={proj.id}
+                  onClick={() => {
+                    onSelectView(proj.id);
+                    onCloseMobile?.();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs transition group cursor-pointer ${
+                    activeView === proj.id
+                      ? 'bg-white/10 text-white font-medium'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate flex-1 min-w-0">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: proj.color }}
+                    />
+                    <span className="truncate">{proj.name}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditProject(proj);
+                        onCloseMobile?.();
+                      }}
+                      className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition"
+                      title="Редактировать проект"
+                    >
+                      <Pencil size={11} />
+                    </button>
+
+                    {counts.projectCounts[proj.id] !== undefined && (
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {counts.projectCounts[proj.id]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </nav>
+          </div>
+
+          {/* Activity Widget */}
+          <SidebarActivityWidget
+            activity={activity}
+            habits={habits}
+            todayProgress={todayProgress}
+            onResetStreak={onResetProductivityStreak}
+          />
+
+          {/* Mini Month Calendar */}
+          {onSelectDate && (
+            <div className="pt-1">
+              <MiniMonthCalendar
+                tasks={tasks}
+                onSelectDate={(d) => {
+                  onSelectDate(d);
+                  onCloseMobile?.();
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Footer: User Account & Settings */}
+        <div className="p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-black/[0.06] dark:border-white/[0.08] space-y-2">
+          {user ? (
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/10 transition group">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'Avatar'}
+                    className="w-7 h-7 rounded-full object-cover border border-white/10 shrink-0"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white uppercase shadow-sm shrink-0">
+                    {(user.displayName || user.email || 'U')[0]}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-slate-200 truncate leading-tight">
+                    {user.displayName || user.email?.split('@')[0]}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        syncStatus === 'syncing'
+                          ? 'bg-amber-400 animate-pulse'
+                          : syncStatus === 'synced'
+                          ? 'bg-emerald-400'
+                          : syncStatus === 'error'
+                          ? 'bg-red-400'
+                          : 'bg-slate-400'
+                      }`}
+                    />
+                    <span className="text-[10px] text-slate-400 truncate">
+                      {syncStatus === 'syncing'
+                        ? 'Синхронизация...'
+                        : syncStatus === 'synced'
+                        ? 'В облаке'
+                        : syncStatus === 'error'
+                        ? 'Ошибка'
+                        : 'Офлайн'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    onLogout();
+                    onCloseMobile?.();
+                  }}
+                  title="Выйти из аккаунта"
+                  className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-white/5 transition shrink-0"
+                >
+                  <LogOut size={13} />
+                </button>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                onOpenAuth?.();
+                onCloseMobile?.();
+              }}
+              className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/15 border border-indigo-500/20 text-indigo-300 hover:text-indigo-200 transition group text-xs font-medium"
+            >
+              <div className="flex items-center gap-2">
+                <Cloud size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span>Войти в облако</span>
+              </div>
+              <span className="text-[10px] bg-indigo-500/20 px-1.5 py-0.5 rounded text-indigo-300">
+                Синхр.
+              </span>
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              onOpenSettings();
+              onCloseMobile?.();
+            }}
+            className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition py-1.5 px-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 w-full"
+          >
+            <Settings2 size={14} />
+            <span>Настройки</span>
+          </button>
+        </div>
+      </aside>
+    </div>
+  ) : null;
+
+  return (
+    <>
+      {desktopAside}
+      {mobileDrawer}
+    </>
   );
 };
 

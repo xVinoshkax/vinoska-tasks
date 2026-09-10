@@ -70,9 +70,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-[#16181e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="w-full max-w-md bg-[#16181e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="h-14 px-5 border-b border-white/10 flex items-center justify-between bg-[#13151b]">
+        <div className="h-14 px-5 border-b border-white/10 flex items-center justify-between bg-[#13151b] shrink-0">
           <div className="flex items-center gap-2.5">
             <div
               className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-sm"
@@ -93,7 +93,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-slate-300 block">
               Название проекта

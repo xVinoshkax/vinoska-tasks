@@ -5,7 +5,12 @@ import {
   CheckCheck, 
   Trash2,
   CheckSquare,
-  X
+  X,
+  Menu,
+  Sparkles,
+  Clock,
+  Inbox,
+  Cloud
 } from 'lucide-react';
 import type { Task, Project, ViewFilter, ActivityDay, CustomPriority, Habit, HabitStatus, TaskFilters, UserProfile, SyncStatus, CloudUserData } from './types';
 import { TaskStorage, HabitStorage, DEFAULT_PRIORITIES } from './api/client';
@@ -76,6 +81,7 @@ export function App() {
   const [activeView, setActiveView] = React.useState<ViewFilter>('today');
   const [filters, setFilters] = React.useState<TaskFilters>(DEFAULT_TASK_FILTERS);
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = React.useState(false);
   const [selectedTask, setSelectedTask] = React.useState<Task | null>(null);
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [isCommandOpen, setIsCommandOpen] = React.useState(false);
@@ -748,6 +754,8 @@ export function App() {
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        isMobileOpen={isMobileDrawerOpen}
+        onCloseMobile={() => setIsMobileDrawerOpen(false)}
         activeView={activeView}
         onSelectView={(v) => {
           setActiveView(v);
@@ -787,15 +795,60 @@ export function App() {
       {/* Column 3: Main Area */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-transparent">
         {/* Seamless Unified Header: exact h-14 shrink-0 and border-b */}
-        <header className="h-14 shrink-0 px-6 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-sm font-semibold text-white tracking-tight">{viewTitle}</h1>
-            <span className="text-xs font-mono text-slate-400 bg-white/[0.06] px-2 py-0.5 rounded-full">
+        <header className="h-14 shrink-0 px-3.5 sm:px-6 border-b border-black/[0.06] dark:border-white/[0.08] bg-white dark:bg-[#121214] flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile Hamburger Drawer Toggle */}
+            <button
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="md:hidden p-2 -ml-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition shrink-0"
+              title="Меню"
+            >
+              <Menu size={19} />
+            </button>
+            <h1 className="text-sm font-semibold text-white tracking-tight truncate">{viewTitle}</h1>
+            <span className="text-xs font-mono text-slate-400 bg-white/[0.06] px-2 py-0.5 rounded-full shrink-0">
               {activeView === 'habits' ? habits.length : filteredTasks.length}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Mobile Cloud sync dot / user icon */}
+            <div className="md:hidden">
+              {currentUser ? (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  title={`Синхронизация: ${syncStatus}`}
+                  className="relative p-1.5 text-slate-400 hover:text-white rounded-lg transition"
+                >
+                  {currentUser.photoURL ? (
+                    <img src={currentUser.photoURL} alt="" className="w-5 h-5 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-indigo-600 text-[9px] font-bold text-white flex items-center justify-center uppercase">
+                      {(currentUser.displayName || currentUser.email || 'U')[0]}
+                    </div>
+                  )}
+                  <span
+                    className={`absolute bottom-0.5 right-0.5 w-2 h-2 rounded-full border border-[#121214] ${
+                      syncStatus === 'synced'
+                        ? 'bg-emerald-400'
+                        : syncStatus === 'syncing'
+                        ? 'bg-amber-400 animate-pulse'
+                        : syncStatus === 'error'
+                        ? 'bg-red-400'
+                        : 'bg-slate-400'
+                    }`}
+                  />
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  title="Войти в облако"
+                  className="p-1.5 text-indigo-400 hover:text-indigo-300 rounded-lg transition"
+                >
+                  <Cloud size={16} />
+                </button>
+              )}
+            </div>
 
             {activeView === 'habits' ? (
               <button
@@ -803,7 +856,8 @@ export function App() {
                 className="flex items-center gap-1.5 text-xs text-indigo-300 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 px-3 py-1.5 rounded-full transition shadow-sm"
               >
                 <Plus size={13} />
-                <span>Новая привычка</span>
+                <span className="hidden sm:inline">Новая привычка</span>
+                <span className="sm:hidden">Создать</span>
               </button>
             ) : (
               <>
@@ -812,7 +866,7 @@ export function App() {
                   <button
                     onClick={handleClearCurrentView}
                     title="Очистить все задачи в этом разделе"
-                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 px-2.5 py-1.5 rounded-full transition"
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 px-2 sm:px-2.5 py-1.5 rounded-full transition"
                   >
                     <Trash2 size={13} />
                     <span className="hidden sm:inline">Очистить список</span>
@@ -826,7 +880,7 @@ export function App() {
                     if (isBatchMode) setSelectedTaskIds([]);
                   }}
                   title="Выбор нескольких задач для удаления"
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition ${
+                  className={`flex items-center gap-1.5 text-xs px-2.5 sm:px-3 py-1.5 rounded-full border transition ${
                     isBatchMode
                       ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40'
                       : 'text-slate-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.06]'
@@ -843,11 +897,12 @@ export function App() {
             {/* Command Palette button */}
             <button
               onClick={() => setIsCommandOpen(true)}
-              className="flex items-center gap-2 text-xs text-slate-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-full border border-white/[0.06] transition"
+              className="flex items-center gap-1.5 sm:gap-2 text-xs text-slate-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] px-2.5 sm:px-3 py-1.5 rounded-full border border-white/[0.06] transition"
+              title="Поиск (⌘K)"
             >
               <Search size={13} />
               <span className="hidden sm:inline">Поиск...</span>
-              <kbd className="text-[10px] font-mono bg-white/[0.08] text-slate-300 px-1 rounded">
+              <kbd className="hidden sm:inline text-[10px] font-mono bg-white/[0.08] text-slate-300 px-1 rounded">
                 ⌘K
               </kbd>
             </button>
@@ -855,7 +910,7 @@ export function App() {
         </header>
 
         {/* Main Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 sm:p-6 pb-28 md:pb-6 space-y-4">
           {activeView === 'habits' ? (
             <div className="max-w-4xl w-full mx-auto">
               <HabitsFullView
@@ -870,7 +925,7 @@ export function App() {
             <div className="max-w-4xl w-full mx-auto space-y-4">
               {/* Quick Add Bar */}
               <form onSubmit={handleQuickAdd} className="relative group">
-                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-white transition">
+                <div className="absolute inset-y-0 left-3.5 sm:left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-white transition">
                   <Plus size={16} />
                 </div>
                 <input
@@ -878,11 +933,18 @@ export function App() {
                   type="text"
                   value={quickTitle}
                   onChange={(e) => setQuickTitle(e.target.value)}
-                  placeholder="Что нужно сделать? Напиши и нажми Enter... (Клавиша C)"
-                  className="w-full pl-10 pr-20 py-2.5 rounded-2xl bg-[#1c1c1e] border border-white/[0.08] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-white/30 shadow-sm transition"
+                  placeholder="Что нужно сделать?..."
+                  className="w-full pl-9 sm:pl-10 pr-12 sm:pr-20 py-2.5 rounded-2xl bg-[#1c1c1e] border border-white/[0.08] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-white/30 shadow-sm transition"
                 />
-                <div className="absolute inset-y-0 right-3.5 flex items-center">
-                  <kbd className="text-[10px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
+                <div className="absolute inset-y-0 right-2 sm:right-3.5 flex items-center">
+                  <button
+                    type="submit"
+                    className="sm:hidden p-1.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 transition"
+                    title="Добавить задачу"
+                  >
+                    <Plus size={14} />
+                  </button>
+                  <kbd className="hidden sm:inline text-[10px] font-mono text-slate-500 bg-white/[0.04] px-1.5 py-0.5 rounded-full">
                     Enter ↵
                   </kbd>
                 </div>
@@ -952,7 +1014,7 @@ export function App() {
 
         {/* Floating Batch Actions Bar (when tasks are selected) */}
         {selectedTaskIds.length > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#1c1c1e] border border-white/10 shadow-2xl rounded-full px-4 py-2 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#1c1c1e] border border-white/10 shadow-2xl rounded-full px-4 py-2 flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 duration-150">
             <span className="text-xs font-medium text-slate-200">
               Выбрано: <strong className="text-white">{selectedTaskIds.length}</strong>
             </span>
@@ -976,6 +1038,130 @@ export function App() {
             </button>
           </div>
         )}
+
+        {/* Mobile iOS-style Bottom Navigation Bar */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#121214]/95 backdrop-blur-xl border-t border-white/[0.08] px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around select-none">
+          {/* 1. Сегодня */}
+          <button
+            onClick={() => {
+              setActiveView('today');
+              setSelectedTaskIds([]);
+            }}
+            className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 transition ${
+              activeView === 'today' ? 'text-amber-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <div
+                className={`w-5 h-5 rounded-[5px] border flex flex-col items-center justify-center overflow-hidden shrink-0 ${
+                  activeView === 'today'
+                    ? 'border-amber-400/80 bg-amber-500/20'
+                    : 'border-slate-600 bg-white/5'
+                }`}
+              >
+                <div
+                  className={`w-full h-1.5 ${
+                    activeView === 'today' ? 'bg-amber-400' : 'bg-slate-500'
+                  }`}
+                />
+                <span
+                  className={`text-[8.5px] font-bold font-mono leading-none mt-0.5 ${
+                    activeView === 'today' ? 'text-amber-300' : 'text-slate-400'
+                  }`}
+                >
+                  {new Date().getDate()}
+                </span>
+              </div>
+              {counts.today > 0 && (
+                <span className="absolute -top-1 -right-2.5 text-[8.5px] font-mono font-bold bg-amber-500 text-black px-1 rounded-full min-w-[14px] text-center leading-tight shadow-sm">
+                  {counts.today}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium tracking-tight">Сегодня</span>
+          </button>
+
+          {/* 2. Входящие */}
+          <button
+            onClick={() => {
+              setActiveView('inbox');
+              setSelectedTaskIds([]);
+            }}
+            className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 transition ${
+              activeView === 'inbox' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <Inbox
+                size={19}
+                className={activeView === 'inbox' ? 'text-indigo-400' : 'text-slate-400'}
+              />
+              {counts.inbox > 0 && (
+                <span className="absolute -top-1 -right-2.5 text-[8.5px] font-mono font-bold bg-indigo-500 text-white px-1 rounded-full min-w-[14px] text-center leading-tight shadow-sm">
+                  {counts.inbox}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium tracking-tight">Входящие</span>
+          </button>
+
+          {/* 3. Привычки */}
+          <button
+            onClick={() => {
+              setActiveView('habits');
+              setSelectedTaskIds([]);
+            }}
+            className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 transition ${
+              activeView === 'habits' ? 'text-purple-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <Sparkles
+                size={19}
+                className={activeView === 'habits' ? 'text-purple-400' : 'text-slate-400'}
+              />
+              {habitsRemainingToday > 0 && (
+                <span className="absolute -top-1 -right-2.5 text-[8.5px] font-mono font-bold bg-purple-500 text-white px-1 rounded-full min-w-[14px] text-center leading-tight shadow-sm">
+                  {habitsRemainingToday}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium tracking-tight">Привычки</span>
+          </button>
+
+          {/* 4. Предстоящие */}
+          <button
+            onClick={() => {
+              setActiveView('upcoming');
+              setSelectedTaskIds([]);
+            }}
+            className={`flex-1 py-1 flex flex-col items-center justify-center gap-1 transition ${
+              activeView === 'upcoming' ? 'text-blue-400' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <div className="relative flex items-center justify-center">
+              <Clock
+                size={19}
+                className={activeView === 'upcoming' ? 'text-blue-400' : 'text-slate-400'}
+              />
+              {counts.upcoming > 0 && (
+                <span className="absolute -top-1 -right-2.5 text-[8.5px] font-mono font-bold bg-blue-500 text-white px-1 rounded-full min-w-[14px] text-center leading-tight shadow-sm">
+                  {counts.upcoming}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-medium tracking-tight">Планы</span>
+          </button>
+
+          {/* 5. Меню */}
+          <button
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="flex-1 py-1 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-white transition"
+          >
+            <Menu size={19} />
+            <span className="text-[10px] font-medium tracking-tight">Меню</span>
+          </button>
+        </nav>
       </div>
 
       {/* Column 3: Task Details Inline Flex Sibling with seamless h-14 header */}

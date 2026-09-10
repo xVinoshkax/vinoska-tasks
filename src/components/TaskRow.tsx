@@ -261,7 +261,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
           <button
             onClick={handleCheck}
             title={isCompleted ? 'Вернуть в работу' : 'Завершить задачу'}
-            className="text-slate-400 hover:text-emerald-400 transition shrink-0"
+            className="text-slate-400 hover:text-emerald-400 transition shrink-0 p-1 -m-1"
           >
             {isCompleted ? (
               <CheckCircle2 size={17} className="text-emerald-400 fill-emerald-400/20" />
@@ -274,7 +274,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
           <button
             onClick={handleFocus}
             title={task.is_focus ? 'Убрать из фокуса дня' : 'Сделать фокусом дня'}
-            className={`transition shrink-0 ${
+            className={`transition shrink-0 p-1 -m-1 ${
               task.is_focus
                 ? 'text-amber-400 fill-amber-400'
                 : 'text-slate-500 hover:text-amber-400 opacity-20 hover:opacity-100'
@@ -529,7 +529,7 @@ export const TaskRow: React.FC<TaskRowProps> = ({
 
                     <button
                       onClick={(e) => handleDeleteSubtask(e, st.id)}
-                      className="opacity-0 group-hover/st:opacity-100 text-slate-500 hover:text-rose-400 transition p-0.5"
+                      className="opacity-70 sm:opacity-0 sm:group-hover/st:opacity-100 text-slate-500 hover:text-rose-400 transition p-1"
                       title="Удалить подзадачу"
                     >
                       <Trash2 size={12} />
