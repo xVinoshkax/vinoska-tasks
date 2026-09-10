@@ -25,12 +25,12 @@ import type { FirebaseAppConfig, CloudUserData, UserProfile } from '../types';
 const STORAGE_KEY_FIREBASE_CONFIG = 'vinoska_firebase_config';
 
 export const DEFAULT_FIREBASE_CONFIG: FirebaseAppConfig = {
-  apiKey: 'AIzaSyCAr2_WH0CUnGNPfbCduDTMfxBnhkQ0zgM',
-  authDomain: 'vinoska-tasks.firebaseapp.com',
-  projectId: 'vinoska-tasks',
-  storageBucket: 'vinoska-tasks.firebasestorage.app',
-  messagingSenderId: '698109121102',
-  appId: '1:698109121102:web:66435bf5c5b5e5b51b691f',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
 /**
@@ -60,13 +60,15 @@ export function getFirebaseConfig(): FirebaseAppConfig | null {
       apiKey: envApiKey,
       authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || `${envProjectId}.firebaseapp.com`,
       projectId: envProjectId,
-      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${envProjectId}.appspot.com`,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || `${envProjectId}.firebasestorage.app`,
       messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
       appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
     };
   }
 
-  return DEFAULT_FIREBASE_CONFIG;
+  return DEFAULT_FIREBASE_CONFIG.apiKey && DEFAULT_FIREBASE_CONFIG.projectId
+    ? DEFAULT_FIREBASE_CONFIG
+    : null;
 }
 
 export function saveFirebaseConfig(config: FirebaseAppConfig): void {
